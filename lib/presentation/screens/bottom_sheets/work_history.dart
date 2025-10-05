@@ -2,17 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:lobby_o_staff/core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 
-class UsageHistoryBottomSheet extends StatefulWidget {
-  const UsageHistoryBottomSheet({Key? key}) : super(key: key);
+class WorkHistoryBottomSheet extends StatefulWidget {
+  const WorkHistoryBottomSheet({Key? key}) : super(key: key);
 
   @override
-  State<UsageHistoryBottomSheet> createState() =>
-      _UsageHistoryBottomSheetState();
+  State<WorkHistoryBottomSheet> createState() => _WorkHistoryBottomSheetState();
 }
 
-class _UsageHistoryBottomSheetState extends State<UsageHistoryBottomSheet> {
+class _WorkHistoryBottomSheetState extends State<WorkHistoryBottomSheet> {
   late DateTime _currentDate;
   late DateTime _oldestDate;
+
+  // 月ごとの稼働データ（サンプル）
+  final Map<String, Map<String, dynamic>> _monthlyData = {
+    '2024-10': {'hours': 25, 'minutes': 30, 'days': 8},
+    '2024-11': {'hours': 30, 'minutes': 15, 'days': 10},
+    '2024-12': {'hours': 28, 'minutes': 0, 'days': 9},
+    '2025-1': {'hours': 32, 'minutes': 45, 'days': 11},
+    '2025-2': {'hours': 27, 'minutes': 20, 'days': 9},
+    '2025-3': {'hours': 29, 'minutes': 10, 'days': 10},
+    '2025-4': {'hours': 26, 'minutes': 30, 'days': 8},
+    '2025-5': {'hours': 31, 'minutes': 0, 'days': 10},
+    '2025-6': {'hours': 28, 'minutes': 50, 'days': 9},
+    '2025-7': {'hours': 30, 'minutes': 15, 'days': 10},
+    '2025-8': {'hours': 33, 'minutes': 40, 'days': 11},
+    '2025-9': {'hours': 29, 'minutes': 25, 'days': 10},
+    '2025-10': {'hours': 25, 'minutes': 30, 'days': 8},
+  };
 
   @override
   void initState() {
@@ -60,28 +76,72 @@ class _UsageHistoryBottomSheetState extends State<UsageHistoryBottomSheet> {
     return months[month - 1];
   }
 
+  // 累積稼働時間を計算
+  Map<String, int> _calculateCumulativeHours(DateTime targetDate) {
+    int totalHours = 0;
+    int totalMinutes = 0;
+
+    // データがある最も古い月から対象月までループ
+    DateTime currentMonth = _oldestDate;
+
+    while (currentMonth.isBefore(targetDate) ||
+        (currentMonth.year == targetDate.year &&
+            currentMonth.month == targetDate.month)) {
+      final key = '${currentMonth.year}-${currentMonth.month}';
+      final monthData = _monthlyData[key];
+
+      if (monthData != null) {
+        totalHours += monthData['hours'] as int;
+        totalMinutes += monthData['minutes'] as int;
+      }
+
+      // 次の月へ
+      if (currentMonth.month == 12) {
+        currentMonth = DateTime(currentMonth.year + 1, 1);
+      } else {
+        currentMonth = DateTime(currentMonth.year, currentMonth.month + 1);
+      }
+    }
+
+    // 分を時間に変換
+    totalHours += totalMinutes ~/ 60;
+    totalMinutes = totalMinutes % 60;
+
+    return {'hours': totalHours, 'minutes': totalMinutes};
+  }
+
   // サンプルデータを取得（実際のアプリでは API やデータベースから取得）
   List<Map<String, dynamic>> _getUsageData() {
-    // サンプルデータ
+    final key = '${_currentDate.year}-${_currentDate.month}';
+    final monthData = _monthlyData[key];
+
+    // その月のデータ
+    final hours = monthData?['hours'] ?? 0;
+    final minutes = monthData?['minutes'] ?? 0;
+    final days = monthData?['days'] ?? 0;
+
+    // 累積稼働時間を計算
+    final cumulative = _calculateCumulativeHours(_currentDate);
+
     return [
       {
         'icon': Icons.access_time,
-        'label': '利用時間',
-        'value': '25時間30分',
+        'label': '稼働時間',
+        'value': '${hours}時間${minutes}分',
         'type': 'text',
       },
       {
-        'icon': Icons.attach_money,
-        'label': '請求金額',
-        'value': '¥3,200',
+        // 日数
+        'icon': Icons.event,
+        'label': '稼働日数',
+        'value': '${days}日',
         'type': 'text',
       },
       {
-        'icon': Icons.picture_as_pdf,
-        'label': '請求書',
-        'value': null,
-        'type': 'action',
-        'actionIcon': Icons.arrow_forward_ios,
+        'icon': Icons.trending_up,
+        'label': '累積稼働時間',
+        'value': '${cumulative['hours']}時間${cumulative['minutes']}分',
+        'type': 'text',
       },
     ];
   }
@@ -160,7 +220,7 @@ class _UsageHistoryBottomSheetState extends State<UsageHistoryBottomSheet> {
             ),
           ),
 
-          // 利用実績項目
+          // 稼働実績項目
           Flexible(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

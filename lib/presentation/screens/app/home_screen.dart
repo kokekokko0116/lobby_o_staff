@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lobby_o_staff/presentation/screens/bottom_sheets/service_info.dart';
+import 'package:lobby_o_staff/presentation/screens/bottom_sheets/training_documents.dart';
 import '../../../core/state/app_layout_state.dart';
 import '../../widgets/app/footer.dart';
 import '../../widgets/app/footer_item.dart';
@@ -7,8 +7,8 @@ import '../../../core/routes/route_names.dart';
 import '../bottom_sheets/base/custom_bottom_sheet.dart';
 import '../../components/layout/home_layout.dart';
 import '../bottom_sheets/location.dart';
-import '../bottom_sheets/usage_history.dart';
-import '../bottom_sheets/contract_details.dart';
+import '../bottom_sheets/work_history.dart';
+import '../bottom_sheets/employment_contract.dart';
 import '../bottom_sheets/coordinator.dart';
 import '../bottom_sheets/schedule/schedule_bottom_sheet.dart';
 import '../bottom_sheets/service_detail.dart';
@@ -40,19 +40,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<FooterItem> _footerItems = [
     const FooterItem(
-      icon: Icons.info_outline,
-      activeIcon: Icons.info,
-      label: 'サービス案内',
-    ),
-    const FooterItem(
       icon: Icons.description_outlined,
       activeIcon: Icons.description,
-      label: '契約内容',
+      label: '研修資料',
+    ),
+    const FooterItem(
+      icon: Icons.assignment_outlined,
+      activeIcon: Icons.assignment,
+      label: '雇用契約',
     ),
     const FooterItem(
       icon: Icons.bar_chart_outlined,
       activeIcon: Icons.bar_chart,
-      label: '利用実績',
+      label: '稼働実績',
     ),
     const FooterItem(
       icon: Icons.phone_outlined,
@@ -137,20 +137,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 } else if (index == 2) {
                   CustomBottomSheet.show(
                     context: context,
-                    title: '利用実績',
-                    content: const UsageHistoryBottomSheet(),
+                    title: '稼働実績',
+                    content: const WorkHistoryBottomSheet(),
                   );
                 } else if (index == 0) {
                   CustomBottomSheet.show(
                     context: context,
-                    title: 'サービス案内',
-                    content: const ServiceInfoBottomSheet(),
+                    title: '研修資料',
+                    content: const TrainingDocumentsBottomSheet(),
                   );
                 } else if (index == 1) {
                   CustomBottomSheet.show(
                     context: context,
-                    title: '契約内容',
-                    content: const ContractDetailsBottomSheet(),
+                    title: '雇用契約',
+                    content: const EmploymentContractBottomSheet(),
                   );
                 }
               },

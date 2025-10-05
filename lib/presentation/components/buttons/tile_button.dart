@@ -9,14 +9,14 @@ class TileButton extends StatelessWidget {
   const TileButton({
     super.key,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     required this.icon,
     this.onPressed,
     this.variant = TileButtonVariant.primary,
   });
 
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final IconData icon;
   final VoidCallback? onPressed;
   final TileButtonVariant variant;
@@ -74,12 +74,14 @@ class TileButton extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: AppTextStyles.buttonLarge.copyWith(color: _textColor),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.labelSmall.copyWith(color: _textColor),
-                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle!,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.labelSmall.copyWith(color: _textColor),
+                  ),
+                ],
                 const SizedBox(height: 8),
               ],
             ),

@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
-import '../../../core/constants/app_dimensions.dart';
 import '../../components/buttons/tile_button.dart';
 
-class ServiceInfoBottomSheet extends StatefulWidget {
-  const ServiceInfoBottomSheet({super.key, this.onPdfPressed});
+class TrainingDocumentsBottomSheet extends StatefulWidget {
+  const TrainingDocumentsBottomSheet({super.key, this.onPdfPressed});
 
   final Function(String)? onPdfPressed;
 
   @override
-  State<ServiceInfoBottomSheet> createState() => _ServiceInfoBottomSheetState();
+  State<TrainingDocumentsBottomSheet> createState() =>
+      _TrainingDocumentsBottomSheetState();
 }
 
-class _ServiceInfoBottomSheetState extends State<ServiceInfoBottomSheet> {
+class _TrainingDocumentsBottomSheetState
+    extends State<TrainingDocumentsBottomSheet> {
   @override
   void initState() {
     super.initState();
@@ -32,19 +33,11 @@ class _ServiceInfoBottomSheetState extends State<ServiceInfoBottomSheet> {
 
   Widget _buildPdfTileButtonsGrid() {
     final pdfTiles = [
-      {
-        'title': 'About Service',
-        'subtitle': 'サービス内容の詳細説明',
-        'key': 'service_overview',
-      },
-      {'title': 'About Service', 'subtitle': 'ご利用方法とマナー', 'key': 'usage_guide'},
-      {'title': 'About Service', 'subtitle': 'サービス料金一覧', 'key': 'price_list'},
-      {'title': 'About Service', 'subtitle': 'サービス利用契約書', 'key': 'contract'},
-      {
-        'title': 'About Service',
-        'subtitle': '重要事項の詳細説明',
-        'key': 'important_matters',
-      },
+      {'title': '実地研修', 'key': 'service_overview'},
+      {'title': '座学研修', 'key': 'usage_guide'},
+      {'title': '理念研修', 'key': 'price_list'},
+      {'title': '待遇事務', 'key': 'contract'},
+      {'title': '登録関連', 'key': 'important_matters'},
     ];
 
     return MasonryGridView.count(
@@ -56,8 +49,7 @@ class _ServiceInfoBottomSheetState extends State<ServiceInfoBottomSheet> {
         final tile = pdfTiles[index];
         return TileButton(
           title: tile['title'] as String,
-          subtitle: tile['subtitle'] as String,
-          icon: Icons.picture_as_pdf,
+          icon: Icons.description,
           variant: TileButtonVariant.accent,
           onPressed: () => {},
         );
