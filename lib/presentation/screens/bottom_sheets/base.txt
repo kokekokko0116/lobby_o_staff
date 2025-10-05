@@ -1,0 +1,39 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:lobby_o_staff/core/constants/app_colors.dart';
+import 'package:lobby_o_staff/core/constants/app_text_styles.dart';
+
+import '../../../core/constants/app_dimensions.dart';
+import '../../components/buttons/tile_button.dart';
+import '../../../core/constants/app_images.dart';
+
+class Schedule extends StatefulWidget {
+  const Schedule({super.key});
+
+  @override
+  State<Schedule> createState() => _ScheduleState();
+}
+
+class _ScheduleState extends State<Schedule> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.8,
+        minHeight: 400,
+      ),
+      child: // ここにカレンダーウィジェットを追加,
+    );
+  }
+
+}
