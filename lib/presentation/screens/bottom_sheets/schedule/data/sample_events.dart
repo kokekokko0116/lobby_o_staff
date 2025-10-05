@@ -23,6 +23,8 @@ class SampleEventGenerator {
     final Map<DateTime, List<Event>> events = {};
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final tomorrow = today.add(const Duration(days: 1));
 
     // 1ヶ月前から2ヶ月後までの範囲
     final startDate = DateTime(today.year, today.month - 1, today.day);
@@ -32,8 +34,14 @@ class SampleEventGenerator {
     DateTime currentDate = startDate;
     while (currentDate.isBefore(endDate) ||
         currentDate.isAtSameMomentAs(endDate)) {
-      // 30%の確率でその日にイベントがない
-      if (_random.nextDouble() > 0.3) {
+      // 昨日、今日、明日は必ず予定がある
+      final isImportantDay =
+          currentDate.isAtSameMomentAs(yesterday) ||
+          currentDate.isAtSameMomentAs(today) ||
+          currentDate.isAtSameMomentAs(tomorrow);
+
+      // 重要な日は必ず予定あり、それ以外は70%の確率でイベントあり
+      if (isImportantDay || _random.nextDouble() > 0.3) {
         final eventCount = _random.nextInt(5) + 1; // 1〜5個のイベント
         final dayEvents = <Event>[];
 
