@@ -87,6 +87,7 @@ class _AppFooterState extends State<AppFooter> with TickerProviderStateMixin {
 
   Widget _buildBottomNavigationBar() {
     return BottomNavigationBar(
+      backgroundColor: backgroundSurface,
       currentIndex: AppLayout().currentIndex,
       onTap: _handleTap,
       type: BottomNavigationBarType.fixed,

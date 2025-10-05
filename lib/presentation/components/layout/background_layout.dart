@@ -32,10 +32,12 @@ class BackgroundLayout extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: gradientColors ?? [
-            const Color(0xFF2C3E50), // ダークブルーグレー
-            const Color(0xFF34495E), // 少し明るいブルーグレー
-          ],
+          colors:
+              gradientColors ??
+              [
+                const Color(0xFF2C3E50), // ダークブルーグレー
+                const Color(0xFF34495E), // 少し明るいブルーグレー
+              ],
         ),
         // 背景画像（オプション）
         image: backgroundImage != null
@@ -47,10 +49,7 @@ class BackgroundLayout extends StatelessWidget {
                 },
                 // オーバーレイの適用
                 colorFilter: overlayColor != null
-                    ? ColorFilter.mode(
-                        overlayColor!,
-                        overlayBlendMode,
-                      )
+                    ? ColorFilter.mode(overlayColor!, overlayBlendMode)
                     : null,
               )
             : null,

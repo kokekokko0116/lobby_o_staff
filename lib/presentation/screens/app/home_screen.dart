@@ -29,7 +29,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    _pageController = PageController(initialPage: 1); // 今日のページから開始
+    _currentPageIndex = 1; // 初期表示も今日に設定
   }
 
   @override
@@ -37,6 +38,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _pageController.dispose();
     super.dispose();
   }
+
+  DateTime get _yesterday => DateTime.now().subtract(const Duration(days: 1));
+  DateTime get _today => DateTime.now();
+  DateTime get _tomorrow => DateTime.now().add(const Duration(days: 1));
 
   final List<FooterItem> _footerItems = [
     const FooterItem(
@@ -96,6 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 children: [
                   HomeLayout(
+                    displayDate: _yesterday,
                     onTilePressed: (key) {
                       _handleTilePressed(key);
                     },
@@ -104,6 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                   HomeLayout(
+                    displayDate: _today,
                     onTilePressed: (key) {
                       _handleTilePressed(key);
                     },
@@ -112,6 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                   HomeLayout(
+                    displayDate: _tomorrow,
                     onTilePressed: (key) {
                       _handleTilePressed(key);
                     },
@@ -167,26 +175,52 @@ class _HomeScreenState extends State<HomeScreen> {
       left: 0,
       right: 0,
       child: SafeArea(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: _buildDotIndicators(),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: _buildDateIndicators(),
+          ),
         ),
       ),
     );
   }
 
-  List<Widget> _buildDotIndicators() {
+  List<Widget> _buildDateIndicators() {
+    final dates = [_yesterday, _today, _tomorrow];
+    final labels = ['昨日', '今日', '明日'];
+
     return List.generate(3, (index) {
-      return AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        width: _currentPageIndex == index ? 24 : 8,
-        height: 8,
-        decoration: BoxDecoration(
-          color: _currentPageIndex == index
-              ? Colors.white
-              : Colors.white.withOpacity(0.4),
-          borderRadius: BorderRadius.circular(4),
+      final date = dates[index];
+      final label = labels[index];
+      final isActive = _currentPageIndex == index;
+
+      return GestureDetector(
+        onTap: () {
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: isActive ? Colors.white : Colors.white.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Text(
+            '$label\n${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isActive ? Colors.black87 : Colors.white,
+              fontSize: 11,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+              height: 1.2,
+            ),
+          ),
         ),
       );
     });

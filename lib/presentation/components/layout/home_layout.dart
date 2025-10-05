@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
-import 'background_layout.dart';
-import '../../../core/constants/app_images.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../buttons/tile_button.dart';
-import '../../screens/bottom_sheets/schedule/schedule_bottom_sheet.dart';
-import '../../screens/bottom_sheets/base/custom_bottom_sheet.dart';
 
 class HomeLayout extends StatelessWidget {
   HomeLayout({
@@ -15,26 +11,18 @@ class HomeLayout extends StatelessWidget {
     this.onTilePressed,
     this.onIconPressed,
     this.backgroundImage,
+    this.displayDate,
   });
 
-  final textStyle = AppTextStyles.bodyMedium.copyWith(color: textOnPrimary);
+  final textStyle = AppTextStyles.bodyMedium.copyWith(color: textPrimary);
 
   final Function(String)? onTilePressed;
   final Function(String)? onIconPressed;
   final String? backgroundImage;
-
-  void _showScheduleBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) =>
-          const CustomBottomSheet(child: ScheduleBottomSheet()),
-    );
-  }
+  final DateTime? displayDate;
 
   String _getFormattedDate() {
-    final now = DateTime.now();
+    final now = displayDate ?? DateTime.now();
     final weekdays = ['月', '火', '水', '木', '金', '土', '日'];
     final weekday = weekdays[now.weekday - 1];
     return '${now.year}年${now.month.toString().padLeft(2, '0')}月${now.day.toString().padLeft(2, '0')}日($weekday)';
@@ -50,25 +38,25 @@ class HomeLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTextStyle(
-      style: textStyle,
-      child: BackgroundLayout(
-        backgroundImage: backgroundImage ?? AppImages.authBackground,
-        overlayColor: overlay50,
-        overlayBlendMode: BlendMode.darken,
-        child: SafeArea(
-          child: Padding(
-            // 上 20 他 10
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundPrimary,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+          child: DefaultTextStyle(
+            style: textStyle,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildDateSection(),
                 _buildTimeSection(),
                 _buildStaffSection(),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 _buildIconButtonsRow(),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 _buildNewsSection(),
                 const SizedBox(height: 16),
                 Expanded(child: _buildTileButtonsGrid()),

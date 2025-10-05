@@ -24,7 +24,7 @@ class TileButton extends StatelessWidget {
   Color get _backgroundColor {
     switch (variant) {
       case TileButtonVariant.primary:
-        return backgroundDefault;
+        return backgroundSecondary;
       case TileButtonVariant.accent:
         return backgroundAccent;
     }
@@ -48,6 +48,15 @@ class TileButton extends StatelessWidget {
     }
   }
 
+  Color get _borderColor {
+    switch (variant) {
+      case TileButtonVariant.primary:
+        return borderPrimary;
+      case TileButtonVariant.accent:
+        return Colors.transparent;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -55,9 +64,11 @@ class TileButton extends StatelessWidget {
         color: _backgroundColor,
         borderRadius: AppDimensions.borderRadiusAllMedium,
         boxShadow: AppDimensions.shadowSmall,
+        border: Border.all(color: _borderColor),
       ),
       child: Material(
         color: Colors.transparent,
+
         child: InkWell(
           onTap: onPressed,
           borderRadius: AppDimensions.borderRadiusAllMedium,
