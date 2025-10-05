@@ -12,6 +12,7 @@ import 'widgets/schedule_event_edit.dart';
 import 'widgets/schedule_cancel_confirm.dart'; // Added import for ScheduleCancelConfirm
 import 'widgets/schedule_edit_confirm.dart'; // Added import for ScheduleEditConfirm
 import 'widgets/schedule_pending_detail.dart'; // Added import for SchedulePendingDetail
+import 'data/sample_events.dart'; // 追加
 import '../../../widgets/app/request_completion_widget.dart';
 import '../../../components/buttons/button_row.dart';
 
@@ -53,102 +54,8 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
   // 追加: 選択された予定
   Event? _selectedEvent;
 
-  // サンプルデータ
-  final Map<DateTime, List<Event>> _events = {
-    DateTime(2025, 9, 20): [
-      Event(
-        title: '清掃',
-        time: '14:00~15:00',
-        status: EventStatus.active,
-        date: DateTime(2025, 9, 20),
-        staffName: '田中太郎',
-        staffImagePath: 'assets/images/avatars/staff_sample.png',
-      ),
-    ],
-    DateTime(2025, 9, 22): [
-      Event(
-        title: '清掃',
-        time: '12:00~14:00',
-        status: EventStatus.pending,
-        date: DateTime(2025, 9, 22),
-        staffName: '佐藤花子',
-        staffImagePath: 'assets/images/avatars/staff_sample.png',
-        pendingType: PendingType.edit,
-        requestSentAt: DateTime(2025, 9, 21, 15, 30),
-        originalTime: '10:00~12:00',
-        originalDate: DateTime(2025, 9, 22), // 同じ日の時間変更
-      ),
-    ],
-    DateTime(2025, 9, 25): [
-      Event(
-        title: '清掃',
-        time: '16:00~18:00',
-        status: EventStatus.active,
-        date: DateTime(2025, 9, 25),
-        staffName: '田中太郎',
-        staffImagePath: 'assets/images/avatars/staff_sample.png',
-      ),
-    ],
-    DateTime(2025, 10, 1): [
-      Event(
-        title: '清掃',
-        time: '18:00~22:00',
-        status: EventStatus.active,
-        date: DateTime(2025, 10, 1),
-        staffName: '山田次郎',
-        staffImagePath: 'assets/images/avatars/staff_sample.png',
-      ),
-    ],
-    DateTime(2025, 10, 5): [
-      Event(
-        title: '清掃',
-        time: '08:00~18:00',
-        status: EventStatus.active,
-        date: DateTime(2025, 10, 5),
-        staffName: '佐藤花子',
-        staffImagePath: 'assets/images/avatars/staff_sample.png',
-      ),
-    ],
-    DateTime(2025, 10, 8): [
-      Event(
-        title: '清掃',
-        time: '12:30~13:30',
-        status: EventStatus.pending,
-        date: DateTime(2025, 10, 8),
-        staffName: '田中太郎',
-        staffImagePath: 'assets/images/avatars/staff_sample.png',
-        pendingType: PendingType.add,
-        requestSentAt: DateTime(2025, 9, 29, 10, 15),
-      ),
-    ],
-    DateTime(2025, 10, 9): [
-      Event(
-        title: '清掃',
-        time: '12:30~13:30',
-        status: EventStatus.pending,
-        date: DateTime(2025, 10, 9),
-        staffName: '田中太郎',
-        staffImagePath: 'assets/images/avatars/staff_sample.png',
-        pendingType: PendingType.edit,
-        requestSentAt: DateTime(2025, 9, 29, 10, 15),
-        originalTime: '10:00~11:00',
-        originalDate: DateTime(2025, 10, 8), // 日付も変更された場合
-      ),
-    ],
-    // キャンセル待ちのサンプルも追加
-    DateTime(2025, 10, 12): [
-      Event(
-        title: '清掃',
-        time: '14:00~16:00',
-        status: EventStatus.pending,
-        date: DateTime(2025, 10, 12),
-        staffName: '山田次郎',
-        staffImagePath: 'assets/images/avatars/staff_sample.png',
-        pendingType: PendingType.cancel,
-        requestSentAt: DateTime(2025, 9, 29, 16, 45),
-      ),
-    ],
-  };
+  // サンプルデータ（自動生成）
+  late final Map<DateTime, List<Event>> _events;
 
   // 編集内容を保存するための変数
   String? _editedTitle;
@@ -159,7 +66,13 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
   @override
   void initState() {
     super.initState();
-    _selectedDay = null; // 初期表示では今後の予定を表示
+
+    // サンプルデータを自動生成
+    _events = SampleEventGenerator.generateSampleEvents();
+
+    // 初期表示では本日の予定を表示
+    final now = DateTime.now();
+    _selectedDay = DateTime(now.year, now.month, now.day);
 
     // パラメータに応じて初期表示を分岐
     if (widget.showDetailDirectly) {
@@ -469,6 +382,14 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
                       decoration: BoxDecoration(
                         color: backgroundAccent,
                         borderRadius: BorderRadius.circular(8),
+                        // shadow
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: IconButton(
                         onPressed: _onAddButtonPressed,

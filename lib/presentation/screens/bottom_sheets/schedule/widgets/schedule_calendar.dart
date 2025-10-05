@@ -70,7 +70,7 @@ class ScheduleCalendar extends StatelessWidget {
           weekendTextStyle: AppTextStyles.bodyLarge,
           holidayTextStyle: AppTextStyles.bodyLarge,
           defaultTextStyle: AppTextStyles.bodyLarge,
-          markersMaxCount: 0,
+          markersMaxCount: 0, // デフォルトマーカーは使用しない
         ),
 
         headerStyle: HeaderStyle(
@@ -86,34 +86,33 @@ class ScheduleCalendar extends StatelessWidget {
 
         // カスタムビルダー
         calendarBuilders: CalendarBuilders(
-          defaultBuilder: (context, day, focusedDay) {
-            final events = eventLoader(day);
-            final isSelected = isSameDay(selectedDay, day);
-
+          // マーカービルダーを追加
+          markerBuilder: (context, day, events) {
             if (events.isNotEmpty) {
-              final event = events.first;
-              final eventColor = _getStatusColor(event.status);
-
-              return Container(
-                margin: const EdgeInsets.all(4.0),
-                decoration: BoxDecoration(
-                  color: eventColor,
-                  shape: BoxShape.circle,
-                  border: isSelected
-                      ? Border.all(color: borderInfo, width: 2)
-                      : null,
-                ),
-                child: Center(
-                  child: Text(
-                    '${day.day}',
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+              return Positioned(
+                bottom: 4,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: events.take(3).map((event) {
+                    return Container(
+                      width: 6,
+                      height: 6,
+                      margin: const EdgeInsets.symmetric(horizontal: 1),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(event.status),
+                        shape: BoxShape.circle,
+                      ),
+                    );
+                  }).toList(),
                 ),
               );
-            } else if (isSelected) {
+            }
+            return null;
+          },
+          defaultBuilder: (context, day, focusedDay) {
+            final isSelected = isSameDay(selectedDay, day);
+
+            if (isSelected) {
               return Container(
                 margin: const EdgeInsets.all(4.0),
                 decoration: BoxDecoration(
@@ -128,33 +127,9 @@ class ScheduleCalendar extends StatelessWidget {
             return null;
           },
           outsideBuilder: (context, day, focusedDay) {
-            final events = eventLoader(day);
             final isSelected = isSameDay(selectedDay, day);
 
-            if (events.isNotEmpty) {
-              final event = events.first;
-              final eventColor = _getStatusColor(event.status);
-
-              return Container(
-                margin: const EdgeInsets.all(4.0),
-                decoration: BoxDecoration(
-                  color: eventColor,
-                  shape: BoxShape.circle,
-                  border: isSelected
-                      ? Border.all(color: borderInfo, width: 2)
-                      : null,
-                ),
-                child: Center(
-                  child: Text(
-                    '${day.day}',
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: Colors.white.withOpacity(0.6),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              );
-            } else if (isSelected) {
+            if (isSelected) {
               return Container(
                 margin: const EdgeInsets.all(4.0),
                 decoration: BoxDecoration(
