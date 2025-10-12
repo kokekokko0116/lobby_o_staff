@@ -112,6 +112,13 @@ class AppTextStyles {
     letterSpacing: 0.5,
   );
 
+  static TextStyle get labelXSmall => _getInterStyle(
+    fontSize: 10,
+    fontWeight: FontWeight.w400,
+    height: 1.3,
+    letterSpacing: 0.4,
+  );
+
   // ボタンテキスト
   static TextStyle get buttonLarge => _getInterStyle(
     fontSize: 16,

@@ -5,15 +5,34 @@ import '../../widgets/app/footer.dart';
 import '../../widgets/app/footer_item.dart';
 import '../../../core/routes/route_names.dart';
 import '../bottom_sheets/base/custom_bottom_sheet.dart';
-import '../../components/layout/home_layout.dart';
 import '../bottom_sheets/location.dart';
 import '../bottom_sheets/work_history.dart';
 import '../bottom_sheets/employment_contract.dart';
 import '../bottom_sheets/coordinator.dart';
 import '../bottom_sheets/schedule/schedule_bottom_sheet.dart';
 import '../bottom_sheets/service_detail.dart';
-import '../bottom_sheets/completion_report_popup.dart';
 import '../bottom_sheets/review.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_text_styles.dart';
+
+// 予約データモデル（仮）
+class BookingItem {
+  final String startTime;
+  final String endTime;
+  final String customerName;
+  final String nearestStation;
+  final String serviceType;
+  final String coordinatorName;
+
+  BookingItem({
+    required this.startTime,
+    required this.endTime,
+    required this.customerName,
+    required this.nearestStation,
+    required this.serviceType,
+    required this.coordinatorName,
+  });
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -66,13 +85,65 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
   ];
 
-  // void _showBottomSheet(BuildContext context, int index) {
-  //   CustomBottomSheet.show(
-  //     context: context,
-  //     child: _buildBottomSheetContent(context, index),
-  //     showDragHandle: false,
-  //   );
-  // }
+  // サンプルデータ（実際はAPIから取得）
+  Map<DateTime, List<BookingItem>> get _bookings {
+    return {
+      DateTime(_yesterday.year, _yesterday.month, _yesterday.day): [
+        BookingItem(
+          startTime: '09:00',
+          endTime: '11:00',
+          customerName: '山田 太郎',
+          nearestStation: '博多駅',
+          serviceType: 'レギュラー',
+          coordinatorName: '田中 花子',
+        ),
+        BookingItem(
+          startTime: '14:00',
+          endTime: '16:00',
+          customerName: '佐藤 次郎',
+          nearestStation: '天神駅',
+          serviceType: 'スポット',
+          coordinatorName: '田中 花子',
+        ),
+      ],
+      DateTime(_today.year, _today.month, _today.day): [
+        BookingItem(
+          startTime: '10:00',
+          endTime: '12:00',
+          customerName: '鈴木 美咲',
+          nearestStation: '中洲川端駅',
+          serviceType: 'レギュラー',
+          coordinatorName: '山本 健太',
+        ),
+        BookingItem(
+          startTime: '13:30',
+          endTime: '15:30',
+          customerName: '高橋 愛',
+          nearestStation: '祇園駅',
+          serviceType: 'レギュラー',
+          coordinatorName: '山本 健太',
+        ),
+        BookingItem(
+          startTime: '16:00',
+          endTime: '18:00',
+          customerName: '伊藤 誠',
+          nearestStation: '博多駅',
+          serviceType: 'スポット',
+          coordinatorName: '田中 花子',
+        ),
+      ],
+      DateTime(_tomorrow.year, _tomorrow.month, _tomorrow.day): [
+        BookingItem(
+          startTime: '09:30',
+          endTime: '11:30',
+          customerName: '渡辺 優子',
+          nearestStation: '天神南駅',
+          serviceType: 'レギュラー',
+          coordinatorName: '山本 健太',
+        ),
+      ],
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,57 +151,29 @@ class _HomeScreenState extends State<HomeScreen> {
       animation: AppLayout(),
       builder: (context, child) {
         return Scaffold(
-          // appBar: AppBar(
-          //   leading: IconButton(
-          //     icon: const Icon(Icons.arrow_back),
-          //     onPressed: () {
-          //       Navigator.pushReplacementNamed(context, RouteNames.login);
-          //     },
-          //   ),
-          //   title: const Text('ホーム'),
-          //   automaticallyImplyLeading: false,
-          // ),
-          body: Stack(
-            children: [
-              PageView(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentPageIndex = index;
-                  });
-                },
-                children: [
-                  HomeLayout(
-                    displayDate: _yesterday,
-                    onTilePressed: (key) {
-                      _handleTilePressed(key);
+          backgroundColor: backgroundPrimary,
+          body: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(),
+                _buildDateSelector(),
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentPageIndex = index;
+                      });
                     },
-                    onIconPressed: (key) {
-                      _handleIconPressed(key);
-                    },
+                    children: [
+                      _buildBookingList(_yesterday),
+                      _buildBookingList(_today),
+                      _buildBookingList(_tomorrow),
+                    ],
                   ),
-                  HomeLayout(
-                    displayDate: _today,
-                    onTilePressed: (key) {
-                      _handleTilePressed(key);
-                    },
-                    onIconPressed: (key) {
-                      _handleIconPressed(key);
-                    },
-                  ),
-                  HomeLayout(
-                    displayDate: _tomorrow,
-                    onTilePressed: (key) {
-                      _handleTilePressed(key);
-                    },
-                    onIconPressed: (key) {
-                      _handleIconPressed(key);
-                    },
-                  ),
-                ],
-              ),
-              _buildTopIndicator(),
-            ],
+                ),
+              ],
+            ),
           ),
           extendBody: true,
           bottomNavigationBar: ClipRRect(
@@ -169,141 +212,344 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTopIndicator() {
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      child: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: _buildDateIndicators(),
+  // ヘッダー
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '稼働予定',
+            style: AppTextStyles.h4.copyWith(
+              color: textPrimary,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
+          Row(
+            children: [
+              _buildHeaderIconButton(
+                icon: Icons.calendar_today,
+                label: 'Schedule',
+                onPressed: () {
+                  CustomBottomSheet.show(
+                    context: context,
+                    title: '変更・キャンセル連絡',
+                    content: const ScheduleBottomSheet(
+                      showDetailDirectly: false,
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(width: 12),
+              _buildHeaderIconButton(
+                icon: Icons.check_circle_outline,
+                label: 'Review',
+                onPressed: () {
+                  CustomBottomSheet.show(
+                    context: context,
+                    title: '実施確認と完了報告',
+                    content: const ReviewBottomSheet(),
+                  );
+                },
+              ),
+              const SizedBox(width: 12),
+              _buildHeaderIconButton(
+                icon: Icons.person_outline,
+                label: 'Customer',
+                onPressed: () {
+                  // Customer 担当顧客の処理
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('担当顧客画面（未実装）')));
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  List<Widget> _buildDateIndicators() {
+  Widget _buildHeaderIconButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Column(
+        children: [
+          Icon(icon, color: textPrimary, size: 24),
+          const SizedBox(height: 1),
+          Text(
+            label,
+            style: AppTextStyles.labelXSmall.copyWith(color: textSecondary),
+          ),
+        ],
+      ),
+    );
+    // Container(
+    // decoration: BoxDecoration(
+    //   color: backgroundDefault,
+    //   borderRadius: BorderRadius.circular(8),
+    //   boxShadow: [
+    //     BoxShadow(
+    //       color: Colors.black.withOpacity(0.05),
+    //       blurRadius: 4,
+    //       offset: const Offset(0, 2),
+    //     ),
+    //   ],
+    // ),
+
+    // IconButton(
+    //   icon: Icon(icon, color: textPrimary, size: 24),
+    //   onPressed: onPressed,
+    //   padding: const EdgeInsets.all(8),
+    //   constraints: const BoxConstraints(),
+    // ),
+    // );
+  }
+
+  // 日付セレクター
+  Widget _buildDateSelector() {
     final dates = [_yesterday, _today, _tomorrow];
     final labels = ['昨日', '今日', '明日'];
 
-    return List.generate(3, (index) {
-      final date = dates[index];
-      final label = labels[index];
-      final isActive = _currentPageIndex == index;
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.withOpacity(0.2), width: 1),
+        ),
+      ),
+      child: Row(
+        children: List.generate(3, (index) {
+          final date = dates[index];
+          final isActive = _currentPageIndex == index;
 
-      return GestureDetector(
-        onTap: () {
-          _pageController.animateToPage(
-            index,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: isActive ? Colors.white : Colors.white.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Text(
-            '$label\n${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isActive ? Colors.black87 : Colors.white,
-              fontSize: 11,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-              height: 1.2,
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                _pageController.animateToPage(
+                  index,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: isActive ? buttonAccent : Colors.transparent,
+                      width: 2,
+                    ),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // 昨日、今日、明日
+                    Text(
+                      labels[index],
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: isActive ? textPrimary : textSecondary,
+                        fontSize: 10,
+                        fontWeight: isActive
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: isActive ? textPrimary : textSecondary,
+                        fontSize: 16,
+                        fontWeight: isActive
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
+          );
+        }),
+      ),
+    );
+  }
+
+  // 予約リスト
+  Widget _buildBookingList(DateTime date) {
+    final dateKey = DateTime(date.year, date.month, date.day);
+    final bookings = _bookings[dateKey] ?? [];
+
+    if (bookings.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.event_busy, size: 64, color: textSecondary),
+            const SizedBox(height: 16),
+            Text(
+              'この日の予約はありません',
+              style: AppTextStyles.bodyMedium.copyWith(color: textSecondary),
+            ),
+          ],
         ),
       );
-    });
-  }
-
-  void _handleTilePressed(String key) {
-    switch (key) {
-      case 'schedule_list':
-        // 一覧表示でScheduleボトムシートを開く
-        CustomBottomSheet.show(
-          context: context,
-          title: '予定の確認と変更',
-          content: const ScheduleBottomSheet(showDetailDirectly: false),
-        );
-        break;
-      case 'review':
-        CustomBottomSheet.show(
-          context: context,
-          title: '実施の確認と評価',
-          content: const ReviewBottomSheet(),
-        );
-        break;
-      case 'service':
-        CustomBottomSheet.show(
-          context: context,
-          title: 'サービス内容詳細',
-          content: const ServiceDetailBottomSheet(),
-        );
-        break;
-      case 'coordinator':
-        CustomBottomSheet.show(
-          context: context,
-          title: '担当コーディネーター',
-          content: const CoordinatorBottomSheet(),
-          contentPadding: EdgeInsets.all(0),
-        );
-        break;
     }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: bookings.length,
+      itemBuilder: (context, index) {
+        return _buildBookingCard(bookings[index]);
+      },
+    );
   }
 
-  void _handleIconPressed(String key) {
-    switch (key) {
-      case 'location':
-        CustomBottomSheet.show(
-          context: context,
-          title: '利用場所',
-          content: const LocationBottomSheet(
-            address: '福岡市博多区冷泉町2-34',
-            postalCode: '812-0039',
+  // 予約カード
+  Widget _buildBookingCard(BookingItem booking) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: backgroundDefault,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-        );
-        break;
-      case 'service':
-        CustomBottomSheet.show(
-          context: context,
-          title: 'サービス内容詳細',
-          content: const ServiceDetailBottomSheet(),
-        );
-        break;
-      case 'phone':
-        Navigator.pushNamed(context, RouteNames.call);
-        break;
-      case 'message':
-        // メッセージ機能の処理
-        break;
-      case 'settings':
-        // 設定画面への遷移
-        break;
-      case 'review':
-        CompletionReportPopup.show(
-          context,
-          completionDateTime: DateTime.now(),
-          staffName: 'スタッフ名',
-        );
-        break;
-      case 'schedule_detail':
-        // 詳細画面直接表示でScheduleボトムシートを開く
-        CustomBottomSheet.show(
-          context: context,
-          title: '予定の詳細',
-          content: const ScheduleBottomSheet(showDetailDirectly: true),
-        );
-        break;
-    }
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 時間
+          Text(
+            '${booking.startTime}〜${booking.endTime}',
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: textPrimary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          // 顧客名と最寄駅
+          Row(
+            children: [
+              Text(
+                '${booking.customerName}様',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '@${booking.nearestStation}',
+                style: AppTextStyles.bodySmall.copyWith(color: textSecondary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // サービス種別
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: booking.serviceType == 'レギュラー'
+                  ? backgroundAccent.withOpacity(0.1)
+                  : Colors.orange.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              booking.serviceType,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: booking.serviceType == 'レギュラー'
+                    ? backgroundAccent
+                    : Colors.orange,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // 小アイコンボタンと担当C
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  _buildSmallIconButton(
+                    icon: Icons.place,
+                    onPressed: () {
+                      CustomBottomSheet.show(
+                        context: context,
+                        title: '利用場所',
+                        content: const LocationBottomSheet(
+                          address: '福岡市博多区冷泉町2-34',
+                          postalCode: '812-0039',
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  _buildSmallIconButton(
+                    icon: Icons.cleaning_services,
+                    onPressed: () {
+                      CustomBottomSheet.show(
+                        context: context,
+                        title: 'サービス内容詳細',
+                        content: const ServiceDetailBottomSheet(),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  _buildSmallIconButton(
+                    icon: Icons.support_agent,
+                    onPressed: () {
+                      CustomBottomSheet.show(
+                        context: context,
+                        title: '担当コーディネーター',
+                        content: const CoordinatorBottomSheet(),
+                        contentPadding: EdgeInsets.all(0),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              Text(
+                '担当C：${booking.coordinatorName}',
+                style: AppTextStyles.bodySmall.copyWith(color: textSecondary),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSmallIconButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: backgroundPrimary,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: textAccent, size: 16),
+        onPressed: onPressed,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(),
+      ),
+    );
   }
 }
