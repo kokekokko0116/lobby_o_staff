@@ -3,40 +3,41 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import 'date_selection_widget.dart';
 
-enum ReportStatus {
-  noIssue, // 特に気になることはなかった
-  hasReport, // 報告しておきたいことがあった
+enum WorkCompletionStatus {
+  completed, // いつも通り問題なく予定作業が完了した
+  additionalWork, // 予定以上の追加作業を行なった
+  incomplete, // 予定作業の一部が終わらなかった
 }
 
-class CompletionReportWidget extends StatefulWidget {
-  const CompletionReportWidget({
+class AdditionalWork extends StatefulWidget {
+  const AdditionalWork({
     super.key,
     required this.schedule,
     this.selectedStatus,
-    this.reportText = '',
+    this.additionalWorkText = '',
     this.onStatusChanged,
-    this.onReportChanged,
+    this.onAdditionalWorkChanged,
   });
 
   final ServiceSchedule schedule;
-  final ReportStatus? selectedStatus;
-  final String reportText;
-  final Function(ReportStatus?)? onStatusChanged;
-  final Function(String)? onReportChanged;
+  final WorkCompletionStatus? selectedStatus;
+  final String additionalWorkText;
+  final Function(WorkCompletionStatus?)? onStatusChanged;
+  final Function(String)? onAdditionalWorkChanged;
 
   @override
-  State<CompletionReportWidget> createState() => _CompletionReportWidgetState();
+  State<AdditionalWork> createState() => _AdditionalWorkState();
 }
 
-class _CompletionReportWidgetState extends State<CompletionReportWidget> {
-  ReportStatus? _selectedStatus;
+class _AdditionalWorkState extends State<AdditionalWork> {
+  WorkCompletionStatus? _selectedStatus;
   late TextEditingController _textController;
 
   @override
   void initState() {
     super.initState();
     _selectedStatus = widget.selectedStatus;
-    _textController = TextEditingController(text: widget.reportText);
+    _textController = TextEditingController(text: widget.additionalWorkText);
   }
 
   @override
@@ -57,11 +58,11 @@ class _CompletionReportWidgetState extends State<CompletionReportWidget> {
 
         const SizedBox(height: 16),
         Text(
-          '報告内容',
+          '追加や不足の作業',
           style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
-        Expanded(child: _buildReportTextField()),
+        Expanded(child: _buildAdditionalWorkTextField()),
       ],
     );
   }
@@ -101,26 +102,35 @@ class _CompletionReportWidgetState extends State<CompletionReportWidget> {
     return Column(
       children: [
         _buildCheckboxTile(
-          value: _selectedStatus == ReportStatus.noIssue,
-          title: '特に気になることはなかった。',
+          value: _selectedStatus == WorkCompletionStatus.completed,
+          title: 'いつも通り問題なく予定作業が完了した',
           onChanged: (value) {
             setState(() {
-              _selectedStatus = value! ? ReportStatus.noIssue : null;
-              if (_selectedStatus == ReportStatus.noIssue) {
-                _textController.clear();
-              }
+              _selectedStatus = value! ? WorkCompletionStatus.completed : null;
             });
             widget.onStatusChanged?.call(_selectedStatus);
-            widget.onReportChanged?.call(_textController.text);
           },
         ),
         const SizedBox(height: 8),
         _buildCheckboxTile(
-          value: _selectedStatus == ReportStatus.hasReport,
-          title: '報告しておきたいことがあった。',
+          value: _selectedStatus == WorkCompletionStatus.additionalWork,
+          title: '予定以上の追加作業を行なった',
           onChanged: (value) {
             setState(() {
-              _selectedStatus = value! ? ReportStatus.hasReport : null;
+              _selectedStatus = value!
+                  ? WorkCompletionStatus.additionalWork
+                  : null;
+            });
+            widget.onStatusChanged?.call(_selectedStatus);
+          },
+        ),
+        const SizedBox(height: 8),
+        _buildCheckboxTile(
+          value: _selectedStatus == WorkCompletionStatus.incomplete,
+          title: '予定作業の一部が終わらなかった',
+          onChanged: (value) {
+            setState(() {
+              _selectedStatus = value! ? WorkCompletionStatus.incomplete : null;
             });
             widget.onStatusChanged?.call(_selectedStatus);
           },
@@ -165,7 +175,7 @@ class _CompletionReportWidgetState extends State<CompletionReportWidget> {
     );
   }
 
-  Widget _buildReportTextField() {
+  Widget _buildAdditionalWorkTextField() {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: const Color(0xFFE0E0E0)),
@@ -178,10 +188,10 @@ class _CompletionReportWidgetState extends State<CompletionReportWidget> {
         expands: true,
         textAlignVertical: TextAlignVertical.top,
         onChanged: (value) {
-          widget.onReportChanged?.call(value);
+          widget.onAdditionalWorkChanged?.call(value);
         },
         decoration: InputDecoration(
-          hintText: '報告内容を入力してください...',
+          hintText: '追加作業や未完了作業の内容を入力してください...',
           hintStyle: AppTextStyles.bodyMedium.copyWith(color: textSecondary),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.all(16),

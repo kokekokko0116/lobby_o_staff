@@ -3,19 +3,17 @@ import '../../components/buttons/button_row.dart';
 import '../../widgets/app/review/date_selection_widget.dart';
 import '../../widgets/app/review/completion_report_widget.dart';
 import '../../widgets/app/review/service_confirmation_widget.dart';
-import '../../widgets/app/review/service_evaluation_widget.dart';
-import '../../widgets/app/review/service_comment_widget.dart';
+import '../../widgets/app/review/additional_work.dart';
 import '../../widgets/app/review/review_final_confirmation_widget.dart';
 import '../../widgets/app/review/review_completion_success.dart';
 
 enum ReviewViewState {
   dateSelection, // 1. 日付選択
-  completionReport, // 2. 完了報告の確認
-  serviceConfirmation, // 3. サービス実施確認
-  starRating, // 4. 5つ星評価
-  comment, // 5. コメント入力
-  finalConfirmation, // 6. 最終確認
-  completion, // 完了画面
+  serviceConfirmation, // 2. サービス実施確認
+  additionalWork, // 3. 追加作業
+  completionReport, // 4. 完了報告
+  finalConfirmation, // 5. 最終確認
+  completion, // 6. 完了画面
 }
 
 class ReviewBottomSheet extends StatefulWidget {
@@ -27,18 +25,46 @@ class ReviewBottomSheet extends StatefulWidget {
 
 class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
   ReviewViewState _currentState = ReviewViewState.dateSelection;
-  DateTime? _selectedDateTime;
+  ServiceSchedule? _selectedSchedule;
+  DateTime? _modifiedDateTime;
   bool _isServiceConfirmed = false;
-  int _rating = 0;
-  String _comment = '';
 
-  // サンプルのサービス実施日時リスト
-  List<DateTime> _getServiceDates() {
+  // 追加作業関連
+  WorkCompletionStatus? _workStatus;
+  String _additionalWorkText = '';
+
+  // 完了報告関連
+  ReportStatus? _reportStatus;
+  String _reportText = '';
+
+  // 最終確認
+  bool _isFinalConfirmed = false;
+
+  // サンプルのサービス実施予定リスト
+  List<ServiceSchedule> _getServiceSchedules() {
     final now = DateTime.now();
     return [
-      DateTime(now.year, now.month, now.day - 7, 10, 0), // 1週間前
-      DateTime(now.year, now.month, now.day - 3, 14, 30), // 3日前
-      DateTime(now.year, now.month, now.day - 1, 9, 15), // 昨日
+      ServiceSchedule(
+        dateTime: DateTime(now.year, now.month, now.day - 7, 10, 0),
+        staffName: '田中太郎',
+        nearestStation: '新宿駅',
+        status: 'regular',
+        isCompleted: true,
+      ),
+      ServiceSchedule(
+        dateTime: DateTime(now.year, now.month, now.day - 3, 14, 30),
+        staffName: '佐藤花子',
+        nearestStation: '渋谷駅',
+        status: 'trial',
+        isCompleted: false,
+      ),
+      ServiceSchedule(
+        dateTime: DateTime(now.year, now.month, now.day - 1, 9, 15),
+        staffName: '山田次郎',
+        nearestStation: '品川駅',
+        status: 'regular',
+        isCompleted: false,
+      ),
     ];
   }
 
@@ -51,28 +77,29 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
   void _navigateNext() {
     switch (_currentState) {
       case ReviewViewState.dateSelection:
-        if (_selectedDateTime != null) {
+        if (_selectedSchedule != null) {
+          _navigateToState(ReviewViewState.serviceConfirmation);
+        }
+        break;
+      case ReviewViewState.serviceConfirmation:
+        if (_isServiceConfirmed) {
+          _navigateToState(ReviewViewState.additionalWork);
+        }
+        break;
+      case ReviewViewState.additionalWork:
+        if (_workStatus != null) {
           _navigateToState(ReviewViewState.completionReport);
         }
         break;
       case ReviewViewState.completionReport:
-        _navigateToState(ReviewViewState.serviceConfirmation);
-        break;
-      case ReviewViewState.serviceConfirmation:
-        if (_isServiceConfirmed) {
-          _navigateToState(ReviewViewState.starRating);
+        if (_reportStatus != null) {
+          _navigateToState(ReviewViewState.finalConfirmation);
         }
-        break;
-      case ReviewViewState.starRating:
-        if (_rating > 0) {
-          _navigateToState(ReviewViewState.comment);
-        }
-        break;
-      case ReviewViewState.comment:
-        _navigateToState(ReviewViewState.finalConfirmation);
         break;
       case ReviewViewState.finalConfirmation:
-        _submitReview();
+        if (_isFinalConfirmed) {
+          _submitReview();
+        }
         break;
       default:
         break;
@@ -81,20 +108,17 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
 
   void _navigatePrevious() {
     switch (_currentState) {
-      case ReviewViewState.completionReport:
+      case ReviewViewState.serviceConfirmation:
         _navigateToState(ReviewViewState.dateSelection);
         break;
-      case ReviewViewState.serviceConfirmation:
-        _navigateToState(ReviewViewState.completionReport);
-        break;
-      case ReviewViewState.starRating:
+      case ReviewViewState.additionalWork:
         _navigateToState(ReviewViewState.serviceConfirmation);
         break;
-      case ReviewViewState.comment:
-        _navigateToState(ReviewViewState.starRating);
+      case ReviewViewState.completionReport:
+        _navigateToState(ReviewViewState.additionalWork);
         break;
       case ReviewViewState.finalConfirmation:
-        _navigateToState(ReviewViewState.comment);
+        _navigateToState(ReviewViewState.completionReport);
         break;
       case ReviewViewState.completion:
         Navigator.of(context).pop();
@@ -106,10 +130,16 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
 
   void _submitReview() {
     // レビューデータを送信する処理
-    print('選択日時: $_selectedDateTime');
+    print('=== レビュー送信 ===');
+    print('選択スケジュール: ${_selectedSchedule?.dateTime}');
+    print('変更後の日時: $_modifiedDateTime');
+    print('スタッフ名: ${_selectedSchedule?.staffName}');
     print('サービス確認: $_isServiceConfirmed');
-    print('評価: $_rating');
-    print('コメント: $_comment');
+    print('作業状況: $_workStatus');
+    print('追加作業内容: $_additionalWorkText');
+    print('報告状況: $_reportStatus');
+    print('報告内容: $_reportText');
+    print('最終確認: $_isFinalConfirmed');
 
     _navigateToState(ReviewViewState.completion);
   }
@@ -118,61 +148,83 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
     switch (_currentState) {
       case ReviewViewState.dateSelection:
         return DateSelectionWidget(
-          serviceDates: _getServiceDates(),
-          selectedDateTime: _selectedDateTime,
-          onDateSelected: (date) {
+          serviceSchedules: _getServiceSchedules(),
+          selectedSchedule: _selectedSchedule,
+          onScheduleSelected: (schedule) {
             setState(() {
-              _selectedDateTime = date;
+              _selectedSchedule = schedule;
+              _modifiedDateTime = null;
             });
+            Future.microtask(() => _navigateNext());
           },
-        );
-      case ReviewViewState.completionReport:
-        return CompletionReportWidget(
-          selectedDateTime: _selectedDateTime!,
-          staffName: '田中太郎',
-          staffImagePath: 'assets/images/avatars/staff_sample.png',
         );
       case ReviewViewState.serviceConfirmation:
         return ServiceConfirmationWidget(
-          serviceDateTime: _selectedDateTime!,
+          serviceDateTime: _modifiedDateTime ?? _selectedSchedule!.dateTime,
           isConfirmed: _isServiceConfirmed,
           onConfirmationChanged: (isConfirmed) {
             setState(() {
               _isServiceConfirmed = isConfirmed;
             });
           },
-        );
-      case ReviewViewState.starRating:
-        return ServiceEvaluationWidget(
-          rating: _rating,
-          primaryButtonText: '次へ',
-          secondaryButtonText: '戻る',
-          onRatingChanged: (rating) {
+          onDateTimeChanged: (newDateTime) {
             setState(() {
-              _rating = rating;
+              _modifiedDateTime = newDateTime;
             });
           },
         );
-      case ReviewViewState.comment:
-        return ServiceCommentWidget(
-          comment: _comment,
-          onCommentChanged: (comment) {
+      case ReviewViewState.additionalWork:
+        return AdditionalWork(
+          schedule: _selectedSchedule!,
+          selectedStatus: _workStatus,
+          additionalWorkText: _additionalWorkText,
+          onStatusChanged: (status) {
             setState(() {
-              _comment = comment;
+              _workStatus = status;
+            });
+          },
+          onAdditionalWorkChanged: (text) {
+            setState(() {
+              _additionalWorkText = text;
+            });
+          },
+        );
+      case ReviewViewState.completionReport:
+        return CompletionReportWidget(
+          schedule: _selectedSchedule!,
+          selectedStatus: _reportStatus,
+          reportText: _reportText,
+          onStatusChanged: (status) {
+            setState(() {
+              _reportStatus = status;
+            });
+          },
+          onReportChanged: (text) {
+            setState(() {
+              _reportText = text;
             });
           },
         );
       case ReviewViewState.finalConfirmation:
         return ReviewFinalConfirmationWidget(
-          selectedDateTime: _selectedDateTime!,
-          rating: _rating,
-          comment: _comment,
+          schedule: _selectedSchedule!,
+          modifiedDateTime: _modifiedDateTime,
+          workStatus: _workStatus,
+          additionalWorkText: _additionalWorkText,
+          reportStatus: _reportStatus,
+          reportText: _reportText,
+          isConfirmed: _isFinalConfirmed,
+          onConfirmationChanged: (isConfirmed) {
+            setState(() {
+              _isFinalConfirmed = isConfirmed;
+            });
+          },
         );
       case ReviewViewState.completion:
         return ReviewCompletionSuccessWidget(
-          selectedDateTime: _selectedDateTime!,
-          rating: _rating,
-          comment: _comment,
+          selectedDateTime: _modifiedDateTime ?? _selectedSchedule!.dateTime,
+          rating: 0,
+          comment: '',
         );
     }
   }
@@ -184,16 +236,8 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
           reserveSecondarySpace: false,
           secondaryText: null,
           onSecondaryPressed: null,
-          primaryText: '次へ',
-          onPrimaryPressed: _selectedDateTime != null ? _navigateNext : null,
-        );
-      case ReviewViewState.completionReport:
-        return ButtonRow(
-          reserveSecondarySpace: false,
-          secondaryText: '戻る',
-          onSecondaryPressed: _navigatePrevious,
-          primaryText: '次へ',
-          onPrimaryPressed: _navigateNext,
+          primaryText: null,
+          onPrimaryPressed: null,
         );
       case ReviewViewState.serviceConfirmation:
         return ButtonRow(
@@ -203,21 +247,21 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
           primaryText: '次へ',
           onPrimaryPressed: _isServiceConfirmed ? _navigateNext : null,
         );
-      case ReviewViewState.starRating:
+      case ReviewViewState.additionalWork:
         return ButtonRow(
           reserveSecondarySpace: false,
           secondaryText: '戻る',
           onSecondaryPressed: _navigatePrevious,
           primaryText: '次へ',
-          onPrimaryPressed: _rating > 0 ? _navigateNext : null,
+          onPrimaryPressed: _workStatus != null ? _navigateNext : null,
         );
-      case ReviewViewState.comment:
+      case ReviewViewState.completionReport:
         return ButtonRow(
           reserveSecondarySpace: false,
           secondaryText: '戻る',
           onSecondaryPressed: _navigatePrevious,
           primaryText: '次へ',
-          onPrimaryPressed: _navigateNext,
+          onPrimaryPressed: _reportStatus != null ? _navigateNext : null,
         );
       case ReviewViewState.finalConfirmation:
         return ButtonRow(
@@ -225,7 +269,7 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
           secondaryText: '戻る',
           onSecondaryPressed: _navigatePrevious,
           primaryText: '送信する',
-          onPrimaryPressed: _navigateNext,
+          onPrimaryPressed: _isFinalConfirmed ? _navigateNext : null,
         );
       case ReviewViewState.completion:
         return ButtonRow(

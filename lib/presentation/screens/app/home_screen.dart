@@ -244,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(width: 12),
               _buildHeaderIconButton(
                 icon: Icons.check_circle_outline,
-                label: 'Review',
+                label: 'Report',
                 onPressed: () {
                   CustomBottomSheet.show(
                     context: context,
