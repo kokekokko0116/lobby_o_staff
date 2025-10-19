@@ -199,7 +199,6 @@ class ScheduleEditConfirm extends StatelessWidget {
       children: [
         // コンテンツ部分
         Expanded(
-          flex: 8,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -247,22 +246,14 @@ class ScheduleEditConfirm extends StatelessWidget {
           ),
         ),
 
-        // ボタン部分
-        Expanded(
-          flex: 2,
-          child: Column(
-            children: [
-              // ボタン
-              ButtonRow(
-                reserveSecondarySpace: false,
-                secondaryText: '戻る',
-                onSecondaryPressed: onBack,
-                primaryText: hasChanges ? '送信する' : null,
-                onPrimaryPressed: hasChanges ? onConfirm : null,
-              ),
-            ],
-          ),
+        ButtonRow(
+          reserveSecondarySpace: false,
+          secondaryText: '戻る',
+          onSecondaryPressed: onBack,
+          primaryText: hasChanges ? '送信する' : null,
+          onPrimaryPressed: hasChanges ? onConfirm : null,
         ),
+        const SizedBox(height: 16),
       ],
     );
   }

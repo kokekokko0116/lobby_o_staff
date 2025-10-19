@@ -4,7 +4,13 @@ import 'package:lobby_o_staff/core/constants/app_colors.dart';
 import 'package:lobby_o_staff/core/constants/app_text_styles.dart';
 import '../../../components/buttons/button_row.dart';
 import '../models/schedule_event.dart';
-import 'schedule_calendar.dart'; // 追加
+import 'schedule_calendar.dart';
+
+// 変更理由のenum（追加）
+enum EditReason {
+  customerRequest, // お客様都合
+  staffRequest, // スタッフ都合（お客様の承諾済み）
+}
 
 class ScheduleEventEdit extends StatefulWidget {
   final Event event;
@@ -13,6 +19,7 @@ class ScheduleEventEdit extends StatefulWidget {
     TimeOfDay startTime,
     TimeOfDay endTime,
     DateTime date,
+    EditReason reason, // 追加
   )
   onSubmit;
   final VoidCallback onCancel;
@@ -35,6 +42,7 @@ class _ScheduleEventEditState extends State<ScheduleEventEdit> {
   late int _startMinute;
   late int _endHour;
   late int _endMinute;
+  EditReason? _selectedReason; // 追加：選択された理由
 
   @override
   void initState() {
@@ -64,7 +72,8 @@ class _ScheduleEventEditState extends State<ScheduleEventEdit> {
   TimeOfDay get _endTime => TimeOfDay(hour: _endHour, minute: _endMinute);
 
   bool get _canSubmit {
-    return _selectedDate != null;
+    // 日付と理由が選択されていることが必須
+    return _selectedDate != null && _selectedReason != null;
   }
 
   // 簡単な時間選択ウィジェット
@@ -150,7 +159,6 @@ class _ScheduleEventEditState extends State<ScheduleEventEdit> {
     return Column(
       children: [
         Expanded(
-          flex: 7,
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,7 +185,7 @@ class _ScheduleEventEditState extends State<ScheduleEventEdit> {
                   firstDay: DateTime.now(), // 今日以降のみ選択可能
                   lastDay: DateTime.now().add(const Duration(days: 365)),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
                 // 時間選択
                 Row(
@@ -223,36 +231,92 @@ class _ScheduleEventEditState extends State<ScheduleEventEdit> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // お客様都合
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedReason = EditReason.customerRequest;
+                        });
+                      },
+                      child: Row(
+                        children: [
+                          Radio<EditReason>(
+                            value: EditReason.customerRequest,
+                            groupValue: _selectedReason,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedReason = value;
+                              });
+                            },
+                            activeColor: backgroundAccent,
+                          ),
+                          Expanded(
+                            child: Text(
+                              'お客様都合',
+                              style: AppTextStyles.bodyMedium,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // スタッフ都合
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedReason = EditReason.staffRequest;
+                        });
+                      },
+                      child: Row(
+                        children: [
+                          Radio<EditReason>(
+                            value: EditReason.staffRequest,
+                            groupValue: _selectedReason,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedReason = value;
+                              });
+                            },
+                            activeColor: backgroundAccent,
+                          ),
+                          Expanded(
+                            child: Text(
+                              'スタッフ都合（お客様の承諾済み）',
+                              style: AppTextStyles.bodyMedium,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
         ),
 
         // ボタン部分（固定）
-        Expanded(
-          flex: 2,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ButtonRow(
-                reserveSecondarySpace: false,
-                secondaryText: 'キャンセル',
-                onSecondaryPressed: widget.onCancel,
-                primaryText: '次へ',
-                onPrimaryPressed: _canSubmit
-                    ? () {
-                        widget.onSubmit(
-                          widget.event.title, // 既存のタイトルを保持
-                          _startTime,
-                          _endTime,
-                          _selectedDate,
-                        );
-                      }
-                    : null,
-              ),
-            ],
-          ),
+        ButtonRow(
+          reserveSecondarySpace: false,
+          secondaryText: 'キャンセル',
+          onSecondaryPressed: widget.onCancel,
+          primaryText: '次へ',
+          onPrimaryPressed: _canSubmit
+              ? () {
+                  widget.onSubmit(
+                    widget.event.title, // 既存のタイトルを保持
+                    _startTime,
+                    _endTime,
+                    _selectedDate,
+                    _selectedReason!, // 追加（!は_canSubmitで既にnullチェック済み）
+                  );
+                }
+              : null,
         ),
+        const SizedBox(height: 16),
       ],
     );
   }

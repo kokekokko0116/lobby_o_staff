@@ -30,15 +30,25 @@ class ScheduleCalendar extends StatelessWidget {
     this.lastDay,
   });
 
-  // ステータスに応じた色を取得
-  Color _getStatusColor(EventStatus status) {
-    switch (status) {
+  // ステータスとペンディングタイプに応じた色を取得
+  Color _getStatusColor(Event event) {
+    switch (event.status) {
       case EventStatus.completed:
         return textDisabled;
       case EventStatus.active:
         return backgroundAccent;
       case EventStatus.pending:
-        return Colors.red;
+        // ペンディングタイプに応じて色を変更
+        switch (event.pendingType) {
+          case PendingType.add:
+            return Colors.green; // 追加リクエスト
+          case PendingType.edit:
+            return Colors.orange; // 編集
+          case PendingType.cancel:
+            return Colors.red; // 削除要請
+          case null:
+            return Colors.red; // デフォルトは赤
+        }
     }
   }
 
@@ -140,7 +150,7 @@ class ScheduleCalendar extends StatelessWidget {
                             height: 6,
                             margin: const EdgeInsets.symmetric(horizontal: 1),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(event.status),
+                              color: _getStatusColor(event),
                               shape: BoxShape.circle,
                             ),
                           );

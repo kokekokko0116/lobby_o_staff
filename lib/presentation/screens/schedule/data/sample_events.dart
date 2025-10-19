@@ -1,4 +1,5 @@
 import '../models/schedule_event.dart';
+import '../../bottom_sheets/customer_list.dart'; // 追加
 import 'dart:math';
 
 class SampleEventGenerator {
@@ -13,6 +14,34 @@ class SampleEventGenerator {
     {'name': '高橋美咲', 'image': 'assets/images/avatars/staff_sample.png'},
     {'name': '伊藤健太', 'image': 'assets/images/avatars/staff_sample.png'},
     {'name': '渡辺愛', 'image': 'assets/images/avatars/staff_sample.png'},
+  ];
+
+  // 顧客リスト（追加）
+  static final List<CustomerItem> _customerList = [
+    CustomerItem(
+      name: '山田太郎',
+      nearestStation: '博多駅',
+      startDate: '2025/10/01',
+      endDate: '2026/03/31',
+      coordinatorName: '田中 花子',
+      status: '契約中',
+    ),
+    CustomerItem(
+      name: '佐藤花子',
+      nearestStation: '天神駅',
+      startDate: '2025/09/15',
+      endDate: null,
+      coordinatorName: '鈴木 太郎',
+      status: '契約中',
+    ),
+    CustomerItem(
+      name: '鈴木一郎',
+      nearestStation: '西新駅',
+      startDate: '2025/08/20',
+      endDate: '2025/12/31',
+      coordinatorName: '山田 次郎',
+      status: '休止中',
+    ),
   ];
 
   // タイトルリスト
@@ -66,11 +95,12 @@ class SampleEventGenerator {
   static Event _generateEvent(DateTime date, DateTime today) {
     final staff = _staffList[_random.nextInt(_staffList.length)];
     final title = _titles[_random.nextInt(_titles.length)];
+    final customer = _customerList[_random.nextInt(_customerList.length)]; // 追加
 
     // 時間を生成（8:00〜20:00の範囲で）
-    final startHour = _random.nextInt(12) + 8; // 8〜19時
+    final startHour = _random.nextInt(12) + 8;
     final startMinute = _random.nextBool() ? 0 : 30;
-    final duration = _random.nextInt(4) + 1; // 1〜4時間
+    final duration = _random.nextInt(4) + 1;
     final endHour = startHour + duration;
     final endMinute = startMinute;
 
@@ -84,6 +114,8 @@ class SampleEventGenerator {
     DateTime? requestSentAt;
     String? originalTime;
     DateTime? originalDate;
+    RequestReason? requestReason; // 追加
+    bool? isCustomerRequest; // 追加
 
     final isPast = date.isBefore(today);
 
@@ -104,6 +136,8 @@ class SampleEventGenerator {
         final pendingRandom = _random.nextDouble();
         if (pendingRandom < 0.5) {
           pendingType = PendingType.add;
+          // 追加の場合は、お客様からの依頼かどうかをランダムに設定
+          isCustomerRequest = _random.nextBool();
         } else if (pendingRandom < 0.8) {
           pendingType = PendingType.edit;
           // 編集の場合は元の時間を設定
@@ -111,8 +145,16 @@ class SampleEventGenerator {
               '${(startHour - 1).toString().padLeft(2, '0')}:00'
               '~${(endHour - 1).toString().padLeft(2, '0')}:00';
           originalDate = date.subtract(Duration(days: _random.nextInt(3)));
+          // 理由をランダムに設定
+          requestReason = _random.nextBool()
+              ? RequestReason.customerRequest
+              : RequestReason.staffRequest;
         } else {
           pendingType = PendingType.cancel;
+          // 理由をランダムに設定
+          requestReason = _random.nextBool()
+              ? RequestReason.customerRequest
+              : RequestReason.staffRequest;
         }
 
         // リクエスト送信日時（1〜5日前）
@@ -138,6 +180,9 @@ class SampleEventGenerator {
       requestSentAt: requestSentAt,
       originalTime: originalTime,
       originalDate: originalDate,
+      customer: customer, // 追加
+      requestReason: requestReason, // 追加
+      isCustomerRequest: isCustomerRequest, // 追加
     );
   }
 }

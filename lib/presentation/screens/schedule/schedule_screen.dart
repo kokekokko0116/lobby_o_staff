@@ -9,12 +9,17 @@ import 'widgets/schedule_upcoming_list.dart';
 import 'widgets/schedule_add_form.dart';
 import 'widgets/schedule_event_detail.dart';
 import 'widgets/schedule_event_edit.dart';
-import 'widgets/schedule_cancel_confirm.dart'; // Added import for ScheduleCancelConfirm
-import 'widgets/schedule_edit_confirm.dart'; // Added import for ScheduleEditConfirm
-import 'widgets/schedule_pending_detail.dart'; // Added import for SchedulePendingDetail
-import 'data/sample_events.dart'; // 追加
+import 'widgets/schedule_cancel_confirm.dart';
+import 'widgets/schedule_edit_confirm.dart';
+import 'widgets/schedule_pending_detail.dart';
+import 'data/sample_events.dart';
 import '../../widgets/app/request_completion_widget.dart';
 import '../../components/buttons/button_row.dart';
+import '../bottom_sheets/customer_list.dart';
+
+// 追加: enumのインポート
+export 'widgets/schedule_event_edit.dart' show EditReason;
+export 'widgets/schedule_cancel_confirm.dart' show CancelReason;
 
 enum ScheduleMode {
   view,
@@ -62,6 +67,34 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   TimeOfDay? _editedStartTime;
   TimeOfDay? _editedEndTime;
   DateTime? _editedDate;
+
+  // 顧客リスト（追加）
+  final List<CustomerItem> _customers = [
+    CustomerItem(
+      name: '山田太郎',
+      nearestStation: '博多駅',
+      startDate: '2025/10/01',
+      endDate: '2026/03/31',
+      coordinatorName: '田中 花子',
+      status: '契約中',
+    ),
+    CustomerItem(
+      name: '佐藤花子',
+      nearestStation: '天神駅',
+      startDate: '2025/09/15',
+      endDate: null,
+      coordinatorName: '鈴木 太郎',
+      status: '契約中',
+    ),
+    CustomerItem(
+      name: '鈴木一郎',
+      nearestStation: '西新駅',
+      startDate: '2025/08/20',
+      endDate: '2025/12/31',
+      coordinatorName: '山田 次郎',
+      status: '休止中',
+    ),
+  ];
 
   @override
   void initState() {
@@ -130,6 +163,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         requestSentAt: nearestEvent.requestSentAt,
         originalTime: nearestEvent.originalTime,
         originalDate: nearestEvent.originalDate,
+        customer: nearestEvent.customer, // 追加
+        requestReason: nearestEvent.requestReason, // 追加
+        isCustomerRequest: nearestEvent.isCustomerRequest, // 追加
       );
     }
 
@@ -154,6 +190,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               requestSentAt: event.requestSentAt,
               originalTime: event.originalTime,
               originalDate: event.originalDate,
+              customer: event.customer, // 追加
+              requestReason: event.requestReason, // 追加
+              isCustomerRequest: event.isCustomerRequest, // 追加
             ),
           )
           .toList();
@@ -216,6 +255,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     TimeOfDay startTime,
     TimeOfDay endTime,
     DateTime date,
+    CustomerItem? customer, // 追加
+    bool isCustomerRequest, // 追加
   ) {
     // 新規予定に担当者情報を追加（実際のAPIではサーバーから取得）
     final newEvent = Event(
@@ -226,7 +267,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       date: date,
       staffName: '田中太郎', // 実際はAPIから取得
       staffImagePath: 'assets/images/avatars/staff_sample.png',
+      pendingType: PendingType.add, // 追加リクエスト
+      requestSentAt: DateTime.now(), // 追加
+      customer: customer, // 追加
+      isCustomerRequest: isCustomerRequest, // 追加
+      // requestReasonは追加リクエストの場合は不要（編集・キャンセル時のみ）
     );
+
+    // TODO: customerとisCustomerRequestをAPIに送信する処理を追加
+    print('選択されたお客様: ${customer?.name}');
+    print('お客様からの依頼: $isCustomerRequest');
 
     // リクエスト送信処理
     setState(() {
@@ -255,8 +305,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     });
   }
 
-  void _onConfirmCancel() {
+  void _onConfirmCancel(CancelReason reason) {
+    // CancelReasonをRequestReasonに変換
+    final requestReason = reason == CancelReason.customerRequest
+        ? RequestReason.customerRequest
+        : RequestReason.staffRequest;
+
     // キャンセル処理を実行
+    // TODO: reasonをAPIに送信する処理
+    print(
+      'キャンセル理由: ${requestReason == RequestReason.customerRequest ? "お客様都合" : "スタッフ都合"}',
+    );
     setState(() {
       _currentMode = ScheduleMode.requestSent;
     });
@@ -283,13 +342,26 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     TimeOfDay startTime,
     TimeOfDay endTime,
     DateTime date,
+    EditReason reason, // 追加
   ) {
+    // EditReasonをRequestReasonに変換
+    final requestReason = reason == EditReason.customerRequest
+        ? RequestReason.customerRequest
+        : RequestReason.staffRequest;
+
     // 編集内容を保存して確認画面へ
     setState(() {
       _editedTitle = title;
       _editedStartTime = startTime;
       _editedEndTime = endTime;
       _editedDate = date;
+
+      // TODO: 実際にはここで編集されたイベントを作成してAPIに送信
+      // 暫定的にrequestReasonを保存
+      print(
+        '変更理由: ${requestReason == RequestReason.customerRequest ? "お客様都合" : "スタッフ都合"}',
+      );
+
       _currentMode = ScheduleMode.editConfirm;
     });
   }
@@ -462,6 +534,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       selectedDate: _selectedDay,
       onSubmit: _onSubmitNewEvent,
       onCancel: _onCancelAdd,
+      customers: _customers, // 追加
     );
   }
 
@@ -480,25 +553,21 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     return Column(
       children: [
         Expanded(
-          flex: 8,
           child: Center(
             child: RequestCompletionWidget(requestType: requestType),
           ),
         ),
-        Expanded(
-          flex: 2,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ButtonRow(
-                reserveSecondarySpace: false,
-                secondaryText: null,
-                onSecondaryPressed: null,
-                primaryText: '閉じる',
-                onPrimaryPressed: _onRequestComplete,
-              ),
-            ],
-          ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ButtonRow(
+              reserveSecondarySpace: false,
+              secondaryText: '閉じる',
+              onSecondaryPressed: () => Navigator.of(context).pop(),
+              primaryText: null,
+              onPrimaryPressed: null,
+            ),
+          ],
         ),
       ],
     );
@@ -544,8 +613,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
     return ScheduleCancelConfirm(
       event: _selectedEvent!,
-      onConfirm: _onConfirmCancel,
       onBack: _onBackToDetail,
+      onConfirm: _onConfirmCancel, // このまま（メソッド参照として渡す）
     );
   }
 

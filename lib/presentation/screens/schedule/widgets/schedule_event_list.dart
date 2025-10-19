@@ -10,14 +10,24 @@ class ScheduleEventList extends StatelessWidget {
   const ScheduleEventList({super.key, required this.events, this.onEventTap});
 
   // ステータスに応じた色を取得
-  Color _getStatusColor(EventStatus status) {
-    switch (status) {
+  Color _getStatusColor(Event event) {
+    switch (event.status) {
       case EventStatus.completed:
         return textDisabled;
       case EventStatus.active:
         return backgroundAccent;
       case EventStatus.pending:
-        return Colors.red;
+        // ペンディングタイプに応じて色を変更
+        switch (event.pendingType) {
+          case PendingType.add:
+            return Colors.green; // 追加リクエスト
+          case PendingType.edit:
+            return Colors.orange; // 編集
+          case PendingType.cancel:
+            return Colors.red; // 削除要請
+          case null:
+            return Colors.red; // デフォルトは赤
+        }
     }
   }
 
@@ -40,7 +50,7 @@ class ScheduleEventList extends StatelessWidget {
       itemCount: events.length,
       itemBuilder: (context, index) {
         final event = events[index];
-        final statusColor = _getStatusColor(event.status);
+        final statusColor = _getStatusColor(event); // ← ここを修正
 
         return Card(
           elevation: 2,

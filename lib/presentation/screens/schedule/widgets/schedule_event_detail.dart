@@ -71,7 +71,6 @@ class _ScheduleEventDetailState extends State<ScheduleEventDetail> {
     return Column(
       children: [
         Expanded(
-          flex: 8,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -193,44 +192,41 @@ class _ScheduleEventDetailState extends State<ScheduleEventDetail> {
         ),
 
         // ボタン部分
-        Expanded(
-          flex: 2,
-          child: canEdit
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    // 戻る・次へボタン
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SecondaryButton(
-                            text: '戻る',
-                            onPressed: widget.onBack,
-                          ),
+        canEdit
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  // 戻る・次へボタン
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SecondaryButton(
+                          text: '戻る',
+                          onPressed: widget.onBack,
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: PrimaryButton(
-                            text: '次へ',
-                            onPressed: _selectedAction != null
-                                ? () {
-                                    if (_selectedAction ==
-                                        ScheduleAction.edit) {
-                                      widget.onEdit();
-                                    } else if (_selectedAction ==
-                                        ScheduleAction.cancel) {
-                                      widget.onCancel();
-                                    }
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: PrimaryButton(
+                          text: '次へ',
+                          onPressed: _selectedAction != null
+                              ? () {
+                                  if (_selectedAction == ScheduleAction.edit) {
+                                    widget.onEdit();
+                                  } else if (_selectedAction ==
+                                      ScheduleAction.cancel) {
+                                    widget.onCancel();
                                   }
-                                : null,
-                          ),
+                                }
+                              : null,
                         ),
-                      ],
-                    ),
-                  ],
-                )
-              : SecondaryButton(text: '戻る', onPressed: widget.onBack),
-        ),
+                      ),
+                    ],
+                  ),
+                ],
+              )
+            : SecondaryButton(text: '戻る', onPressed: widget.onBack),
+        const SizedBox(height: 16),
       ],
     );
   }

@@ -3,7 +3,8 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:lobby_o_staff/core/constants/app_colors.dart';
 import 'package:lobby_o_staff/core/constants/app_text_styles.dart';
 import '../../../components/buttons/button_row.dart';
-import 'schedule_calendar.dart'; // 追加
+import 'schedule_calendar.dart';
+import '../../bottom_sheets/customer_list.dart'; // 追加
 
 class ScheduleAddForm extends StatefulWidget {
   final DateTime? selectedDate;
@@ -12,15 +13,19 @@ class ScheduleAddForm extends StatefulWidget {
     TimeOfDay startTime,
     TimeOfDay endTime,
     DateTime date,
+    CustomerItem? customer, // 追加
+    bool isCustomerRequest, // 追加
   )
   onSubmit;
   final VoidCallback onCancel;
+  final List<CustomerItem> customers; // 追加：お客様リストを外部から受け取る
 
   const ScheduleAddForm({
     super.key,
     required this.selectedDate,
     required this.onSubmit,
     required this.onCancel,
+    required this.customers, // 追加
   });
 
   @override
@@ -37,6 +42,10 @@ class _ScheduleAddFormState extends State<ScheduleAddForm> {
   int _endHour = 10;
   int _endMinute = 0;
 
+  // 追加：お客様選択とチェックボックスの状態
+  CustomerItem? _selectedCustomer;
+  bool _isCustomerRequest = false;
+
   @override
   void initState() {
     super.initState();
@@ -48,7 +57,10 @@ class _ScheduleAddFormState extends State<ScheduleAddForm> {
   TimeOfDay get _endTime => TimeOfDay(hour: _endHour, minute: _endMinute);
 
   bool get _canSubmit {
-    return _selectedDate != null;
+    // 日付とお客様が選択されていて、かつチェックボックスがtrueであることが必須
+    return _selectedDate != null &&
+        _selectedCustomer != null &&
+        _isCustomerRequest;
   }
 
   // 簡単な時間選択ウィジェット
@@ -134,12 +146,52 @@ class _ScheduleAddFormState extends State<ScheduleAddForm> {
     return Column(
       children: [
         Expanded(
-          flex: 7,
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 日付選択カレンダー（ScheduleCalendarを使用）
+                // お客様選択（追加）
+                Text('お客様を選択', style: AppTextStyles.bodyMedium),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: borderPrimary),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<CustomerItem>(
+                      value: _selectedCustomer,
+                      isExpanded: true,
+                      hint: Text(
+                        'お客様を選択してください',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: textSecondary,
+                        ),
+                      ),
+                      onChanged: (customer) {
+                        setState(() {
+                          _selectedCustomer = customer;
+                        });
+                      },
+                      items: widget.customers.map((customer) {
+                        return DropdownMenuItem<CustomerItem>(
+                          value: customer,
+                          child: Text(
+                            '${customer.name}様（${customer.nearestStation}）',
+                            style: AppTextStyles.bodyMedium,
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // 日付選択カレンダー（既存）
                 Text('日付を選択', style: AppTextStyles.bodyMedium),
                 const SizedBox(height: 8),
                 ScheduleCalendar(
@@ -161,9 +213,9 @@ class _ScheduleAddFormState extends State<ScheduleAddForm> {
                   firstDay: DateTime.now(), // 今日以降のみ選択可能
                   lastDay: DateTime.now().add(const Duration(days: 365)),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
-                // 時間選択
+                // 時間選択（既存）
                 Row(
                   children: [
                     Expanded(
@@ -207,36 +259,61 @@ class _ScheduleAddFormState extends State<ScheduleAddForm> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
+
+                // チェックボックスのセクション（262行目付近）
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isCustomerRequest = !_isCustomerRequest;
+                    });
+                  },
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Checkbox(
+                        value: _isCustomerRequest,
+                        onChanged: (value) {
+                          setState(() {
+                            _isCustomerRequest = value ?? false;
+                          });
+                        },
+                        activeColor: backgroundAccent,
+                      ),
+                      Expanded(
+                        child: Text(
+                          'お客様からのご依頼に基づきサービスを追加します。',
+                          style: AppTextStyles.bodySmall,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
         ),
 
-        // ボタン部分（固定）
-        Expanded(
-          flex: 2,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ButtonRow(
-                reserveSecondarySpace: false,
-                secondaryText: 'キャンセル',
-                onSecondaryPressed: widget.onCancel,
-                primaryText: '追加する',
-                onPrimaryPressed: _canSubmit
-                    ? () {
-                        widget.onSubmit(
-                          '', // タイトルは空文字
-                          _startTime,
-                          _endTime,
-                          _selectedDate!,
-                        );
-                      }
-                    : null,
-              ),
-            ],
-          ),
+        // ボタン部分（既存）
+        ButtonRow(
+          reserveSecondarySpace: false,
+          secondaryText: 'キャンセル',
+          onSecondaryPressed: widget.onCancel,
+          primaryText: '追加する',
+          onPrimaryPressed: _canSubmit
+              ? () {
+                  widget.onSubmit(
+                    '', // タイトルは空文字
+                    _startTime,
+                    _endTime,
+                    _selectedDate!,
+                    _selectedCustomer, // 追加
+                    _isCustomerRequest, // 追加
+                  );
+                }
+              : null,
         ),
+        const SizedBox(height: 16),
       ],
     );
   }

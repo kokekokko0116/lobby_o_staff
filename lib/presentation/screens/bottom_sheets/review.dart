@@ -311,10 +311,10 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
       case ReviewViewState.completion:
         return ButtonRow(
           reserveSecondarySpace: false,
-          secondaryText: null,
-          onSecondaryPressed: null,
-          primaryText: '閉じる',
-          onPrimaryPressed: () => Navigator.of(context).pop(),
+          secondaryText: '閉じる',
+          onSecondaryPressed: () => Navigator.of(context).pop(),
+          primaryText: null,
+          onPrimaryPressed: null,
         );
     }
   }
