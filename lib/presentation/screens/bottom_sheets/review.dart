@@ -59,7 +59,7 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
         isCompleted: false,
       ),
       ServiceSchedule(
-        dateTime: DateTime(now.year, now.month, now.day - 1, 9, 15),
+        dateTime: DateTime(now.year, now.month, now.day - 1, 9, 30),
         staffName: '山田次郎',
         nearestStation: '品川駅',
         status: 'regular',
@@ -213,12 +213,6 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
           additionalWorkText: _additionalWorkText,
           reportStatus: _reportStatus,
           reportText: _reportText,
-          isConfirmed: _isFinalConfirmed,
-          onConfirmationChanged: (isConfirmed) {
-            setState(() {
-              _isFinalConfirmed = isConfirmed;
-            });
-          },
         );
       case ReviewViewState.completion:
         return ReviewCompletionSuccessWidget(
@@ -269,7 +263,7 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
           secondaryText: '戻る',
           onSecondaryPressed: _navigatePrevious,
           primaryText: '送信する',
-          onPrimaryPressed: _isFinalConfirmed ? _navigateNext : null,
+          onPrimaryPressed: _navigateNext,
         );
       case ReviewViewState.completion:
         return ButtonRow(

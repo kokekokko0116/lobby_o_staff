@@ -14,8 +14,6 @@ class ReviewFinalConfirmationWidget extends StatelessWidget {
     this.additionalWorkText = '',
     this.reportStatus,
     this.reportText = '',
-    required this.isConfirmed,
-    required this.onConfirmationChanged,
   });
 
   final ServiceSchedule schedule;
@@ -24,8 +22,6 @@ class ReviewFinalConfirmationWidget extends StatelessWidget {
   final String additionalWorkText;
   final ReportStatus? reportStatus;
   final String reportText;
-  final bool isConfirmed;
-  final Function(bool) onConfirmationChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -135,38 +131,6 @@ class ReviewFinalConfirmationWidget extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // 承諾チェックボックス
-        InkWell(
-          onTap: () => onConfirmationChanged(!isConfirmed),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: Checkbox(
-                  value: isConfirmed,
-                  onChanged: (value) => onConfirmationChanged(value ?? false),
-                  activeColor: backgroundAccent,
-                  checkColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'お客様に変更の承諾を頂きました',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: isConfirmed ? FontWeight.w600 : FontWeight.w400,
-                  ),
-                ),
-              ),
-            ],
           ),
         ),
       ],
