@@ -14,6 +14,7 @@ enum ReviewViewState {
   completionReport, // 4. 完了報告
   finalConfirmation, // 5. 最終確認
   completion, // 6. 完了画面
+  viewCompletedReview, // 7. 報告済み詳細表示（追加）
 }
 
 class ReviewBottomSheet extends StatefulWidget {
@@ -74,6 +75,33 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
     });
   }
 
+  // onScheduleSelectedの処理を変更
+  void _handleScheduleSelected(ServiceSchedule schedule) {
+    setState(() {
+      _selectedSchedule = schedule;
+      _modifiedDateTime = null;
+    });
+
+    if (schedule.isCompleted) {
+      // 報告済みの場合は詳細表示に遷移
+      // TODO: 実際のデータをロードする必要があります
+      // ここでは仮のデータを設定
+      _workStatus = WorkCompletionStatus.completed;
+      _additionalWorkText = 'サンプルの追加作業内容';
+      _reportStatus = ReportStatus.noIssue;
+      _reportText = '';
+
+      Future.microtask(
+        () => _navigateToState(ReviewViewState.viewCompletedReview),
+      );
+    } else {
+      // 未報告の場合は新規報告フローに進む
+      Future.microtask(
+        () => _navigateToState(ReviewViewState.serviceConfirmation),
+      );
+    }
+  }
+
   void _navigateNext() {
     switch (_currentState) {
       case ReviewViewState.dateSelection:
@@ -120,6 +148,9 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
       case ReviewViewState.finalConfirmation:
         _navigateToState(ReviewViewState.completionReport);
         break;
+      case ReviewViewState.viewCompletedReview: // 追加
+        _navigateToState(ReviewViewState.dateSelection);
+        break;
       case ReviewViewState.completion:
         Navigator.of(context).pop();
         break;
@@ -150,13 +181,7 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
         return DateSelectionWidget(
           serviceSchedules: _getServiceSchedules(),
           selectedSchedule: _selectedSchedule,
-          onScheduleSelected: (schedule) {
-            setState(() {
-              _selectedSchedule = schedule;
-              _modifiedDateTime = null;
-            });
-            Future.microtask(() => _navigateNext());
-          },
+          onScheduleSelected: _handleScheduleSelected, // 変更
         );
       case ReviewViewState.serviceConfirmation:
         return ServiceConfirmationWidget(
@@ -214,6 +239,16 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
           reportStatus: _reportStatus,
           reportText: _reportText,
         );
+      case ReviewViewState.viewCompletedReview: // 追加
+        return ReviewFinalConfirmationWidget(
+          schedule: _selectedSchedule!,
+          modifiedDateTime: _modifiedDateTime,
+          workStatus: _workStatus,
+          additionalWorkText: _additionalWorkText,
+          reportStatus: _reportStatus,
+          reportText: _reportText,
+          isReadOnly: true, // 読み取り専用モードを示すフラグ（オプション）
+        );
       case ReviewViewState.completion:
         return ReviewCompletionSuccessWidget(
           selectedDateTime: _modifiedDateTime ?? _selectedSchedule!.dateTime,
@@ -264,6 +299,14 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
           onSecondaryPressed: _navigatePrevious,
           primaryText: '送信する',
           onPrimaryPressed: _navigateNext,
+        );
+      case ReviewViewState.viewCompletedReview: // 追加
+        return ButtonRow(
+          reserveSecondarySpace: false,
+          secondaryText: '戻る',
+          onSecondaryPressed: _navigatePrevious,
+          primaryText: null,
+          onPrimaryPressed: null,
         );
       case ReviewViewState.completion:
         return ButtonRow(

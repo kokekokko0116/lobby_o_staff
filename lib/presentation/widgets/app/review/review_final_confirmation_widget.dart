@@ -14,6 +14,7 @@ class ReviewFinalConfirmationWidget extends StatelessWidget {
     this.additionalWorkText = '',
     this.reportStatus,
     this.reportText = '',
+    this.isReadOnly = false, // 追加
   });
 
   final ServiceSchedule schedule;
@@ -22,13 +23,19 @@ class ReviewFinalConfirmationWidget extends StatelessWidget {
   final String additionalWorkText;
   final ReportStatus? reportStatus;
   final String reportText;
+  final bool isReadOnly; // 追加
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('以下をご確認の上、「送信」してください。', style: AppTextStyles.bodyLarge),
+        Text(
+          isReadOnly
+              ? '報告内容' // 読み取り専用の場合
+              : '以下をご確認の上、「送信」してください。', // 新規報告の場合
+          style: AppTextStyles.bodyLarge,
+        ),
         const SizedBox(height: 16),
         Expanded(
           child: Container(

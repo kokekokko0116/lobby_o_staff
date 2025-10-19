@@ -207,6 +207,38 @@ class _DateSelectionWidgetState extends State<DateSelectionWidget> {
     required int count,
   }) {
     final isSelected = _currentFilter == filter;
+
+    // フィルターの種類に応じた色を設定
+    Color getBackgroundColor() {
+      if (isSelected) {
+        switch (filter) {
+          case ScheduleFilter.completed:
+            return const Color(0xFF4CAF50); // 緑
+          case ScheduleFilter.uncompleted:
+            return const Color(0xFFD64545); // 赤
+          case ScheduleFilter.all:
+            return backgroundAccent; // デフォルトのアクセントカラー
+        }
+      } else {
+        return backgroundSecondary;
+      }
+    }
+
+    Color getBorderColor() {
+      if (isSelected) {
+        switch (filter) {
+          case ScheduleFilter.completed:
+            return const Color(0xFF4CAF50); // 緑
+          case ScheduleFilter.uncompleted:
+            return const Color(0xFFD64545); // 赤
+          case ScheduleFilter.all:
+            return backgroundAccent;
+        }
+      } else {
+        return borderPrimary;
+      }
+    }
+
     return InkWell(
       onTap: () {
         setState(() {
@@ -217,10 +249,10 @@ class _DateSelectionWidgetState extends State<DateSelectionWidget> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
         decoration: BoxDecoration(
-          color: isSelected ? backgroundAccent : backgroundSecondary,
+          color: getBackgroundColor(),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? backgroundAccent : borderPrimary,
+            color: getBorderColor(),
             width: isSelected ? 2 : 1,
           ),
         ),
