@@ -237,7 +237,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   void _onRequestComplete() {
     setState(() {
       _currentMode = ScheduleMode.view;
-      _selectedDay = null; // 選択をリセット
+      // 選択をリセットせず、当日を設定
+      final now = DateTime.now();
+      _selectedDay = DateTime(now.year, now.month, now.day);
     });
   }
 
@@ -270,7 +272,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     setState(() {
       _currentMode = ScheduleMode.view;
       _selectedEvent = null;
-      _selectedDay = null;
+      // 選択をリセットせず、当日を設定
+      final now = DateTime.now();
+      _selectedDay = DateTime(now.year, now.month, now.day);
     });
   }
 
@@ -308,12 +312,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     return Scaffold(
       backgroundColor: backgroundSurface,
       appBar: _buildAppBar(context),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: _buildContent(),
-        ),
-      ),
+      body: Padding(padding: const EdgeInsets.all(16), child: _buildContent()),
       // フローティングアクションボタンを追加（viewモードの時のみ表示）
       floatingActionButton: _currentMode == ScheduleMode.view
           ? FloatingActionButton(
@@ -383,11 +382,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         ),
       ),
       centerTitle: true,
-      // AppBarの下に薄い線を追加
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Container(color: borderMuted),
-      ),
     );
   }
 
@@ -437,35 +431,25 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           },
         ),
 
-        // 予定表示部分
+        // 予定表示部分（常に選択された日の予定を表示）
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (_selectedDay != null) ...[
-                // +ボタンを削除して、タイトルのみ表示
-                Text(
+              // 真ん中寄せ
+              Center(
+                child: Text(
                   '${_selectedDay!.year}年${_selectedDay!.month}月${_selectedDay!.day}日の予定',
-                  style: AppTextStyles.h6,
+                  style: AppTextStyles.h5,
                 ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: ScheduleEventList(
-                    events: _getEventsForDay(_selectedDay!),
-                    onEventTap: _onEventTap,
-                  ),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: ScheduleEventList(
+                  events: _getEventsForDay(_selectedDay!),
+                  onEventTap: _onEventTap,
                 ),
-              ] else ...[
-                // +ボタンを削除して、タイトルのみ表示
-                Text('今後の予定', style: AppTextStyles.h6),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: ScheduleUpcomingList(
-                    events: _getUpcomingEvents(),
-                    onEventTap: _onEventTap,
-                  ),
-                ),
-              ],
+              ),
             ],
           ),
         ),

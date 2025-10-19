@@ -48,6 +48,11 @@ class _ServiceConfirmationWidgetState extends State<ServiceConfirmationWidget> {
     _endMinute = endTime.minute;
 
     _customerApprovalConfirmed = false;
+
+    // 初期状態を親に通知
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notifyParent();
+    });
   }
 
   DateTime get _currentDateTime => DateTime(
@@ -109,7 +114,7 @@ class _ServiceConfirmationWidgetState extends State<ServiceConfirmationWidget> {
               child: DropdownButton<int>(
                 value: _selectedYear,
                 isExpanded: true,
-                items: List.generate(5, (i) => DateTime.now().year - 2 + i)
+                items: List.generate(3, (i) => DateTime.now().year - 1 + i)
                     .map(
                       (year) => DropdownMenuItem(
                         value: year,
@@ -225,8 +230,8 @@ class _ServiceConfirmationWidgetState extends State<ServiceConfirmationWidget> {
                         onChanged(value, minute);
                       }
                     },
-                    items: List.generate(11, (index) {
-                      final hourValue = index + 9; // 9時から19時まで
+                    items: List.generate(19, (index) {
+                      final hourValue = index + 6; // 6時から24時まで
                       return DropdownMenuItem(
                         value: hourValue,
                         child: Text(
@@ -251,7 +256,7 @@ class _ServiceConfirmationWidgetState extends State<ServiceConfirmationWidget> {
                         onChanged(hour, value);
                       }
                     },
-                    items: [0, 15, 30, 45].map((minutes) {
+                    items: [0, 30].map((minutes) {
                       return DropdownMenuItem(
                         value: minutes,
                         child: Text(
@@ -336,9 +341,9 @@ class _ServiceConfirmationWidgetState extends State<ServiceConfirmationWidget> {
                       if (_endHour <= hour ||
                           (_endHour == hour && _endMinute <= minute)) {
                         _endHour = hour + 1;
-                        if (_endHour > 19) {
-                          _endHour = 19;
-                          _endMinute = 45;
+                        if (_endHour > 24) {
+                          _endHour = 24;
+                          _endMinute = 0;
                         } else {
                           _endMinute = minute;
                         }

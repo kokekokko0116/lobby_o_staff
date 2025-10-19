@@ -105,7 +105,7 @@ class _DateSelectionWidgetState extends State<DateSelectionWidget> {
                             border: Border.all(
                               color: schedule.isCompleted
                                   ? const Color(0xFF4CAF50) // 緑（完了）
-                                  : const Color(0xFFBDBDBD), // 薄いグレー（未完了）
+                                  : const Color(0xFFD64545), // 赤（未完了）
                               width: 2,
                             ),
                             borderRadius: BorderRadius.circular(8),
