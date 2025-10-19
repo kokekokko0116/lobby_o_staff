@@ -110,7 +110,6 @@ class _CustomerListState extends State<CustomerList> {
           children: [
             // 左側：名前、タグ、アイコンボタン
             Expanded(
-              flex: 3,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -192,41 +191,36 @@ class _CustomerListState extends State<CustomerList> {
             ),
             const SizedBox(width: 16),
             // 右側：開始日、終了日、担当C
-            Expanded(
-              flex: 2,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // 上部：開始日・終了日
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // 上部：開始日・終了日
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '開始日：${customer.startDate}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: textSecondary,
+                      ),
+                    ),
+                    if (customer.endDate != null) ...[
                       Text(
-                        '開始日：${customer.startDate}',
+                        '終了日：${customer.endDate}',
                         style: AppTextStyles.bodySmall.copyWith(
                           color: textSecondary,
                         ),
                       ),
-                      if (customer.endDate != null) ...[
-                        Text(
-                          '終了日：${customer.endDate}',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: textSecondary,
-                          ),
-                        ),
-                      ],
                     ],
-                  ),
-                  // 下部：担当C
-                  Text(
-                    '担当C：${customer.coordinatorName}',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: textSecondary,
-                    ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+                // 下部：担当C
+                Text(
+                  '担当C：${customer.coordinatorName}',
+                  style: AppTextStyles.bodySmall.copyWith(color: textSecondary),
+                ),
+              ],
             ),
           ],
         ),

@@ -432,107 +432,122 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 時間
-          Text(
-            '${booking.startTime}〜${booking.endTime}',
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: textPrimary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          // 顧客名と最寄駅
-          Row(
-            children: [
-              Text(
-                '${booking.customerName}様',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '@${booking.nearestStation}',
-                style: AppTextStyles.bodySmall.copyWith(color: textSecondary),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          // サービス種別
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: booking.serviceType == 'レギュラー'
-                  ? backgroundAccent.withOpacity(0.1)
-                  : Colors.orange.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              booking.serviceType,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: booking.serviceType == 'レギュラー'
-                    ? backgroundAccent
-                    : Colors.orange,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          // 小アイコンボタンと担当C
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSmallIconButton(
-                    icon: Icons.place,
-                    onPressed: () {
-                      CustomBottomSheet.show(
-                        context: context,
-                        title: '利用場所',
-                        content: const LocationBottomSheet(
-                          address: '福岡市博多区冷泉町2-34',
-                          postalCode: '812-0039',
+                  // 時間
+                  Text(
+                    '${booking.startTime}〜${booking.endTime}',
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // 顧客名と最寄駅
+                  Row(
+                    children: [
+                      Text(
+                        '${booking.customerName}様',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: textPrimary,
+                          fontWeight: FontWeight.w600,
                         ),
-                      );
-                    },
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '@${booking.nearestStation}',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  _buildSmallIconButton(
-                    icon: Icons.cleaning_services,
-                    onPressed: () {
-                      CustomBottomSheet.show(
-                        context: context,
-                        title: 'サービス内容詳細',
-                        content: const ServiceDetailBottomSheet(),
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  _buildSmallIconButton(
-                    icon: Icons.support_agent,
-                    onPressed: () {
-                      CustomBottomSheet.show(
-                        context: context,
-                        title: '担当コーディネーター',
-                        content: const CoordinatorBottomSheet(),
-                        contentPadding: EdgeInsets.all(0),
-                      );
-                    },
+                  const SizedBox(height: 8),
+                  // サービス種別
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: booking.serviceType == 'レギュラー'
+                          ? backgroundAccent.withOpacity(0.1)
+                          : Colors.orange.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      booking.serviceType,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: booking.serviceType == 'レギュラー'
+                            ? backgroundAccent
+                            : Colors.orange,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
-              Text(
-                '担当C：${booking.coordinatorName}',
-                style: AppTextStyles.bodySmall.copyWith(color: textSecondary),
-              ),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    _buildSmallIconButton(
+                      icon: Icons.place,
+                      onPressed: () {
+                        CustomBottomSheet.show(
+                          context: context,
+                          title: '利用場所',
+                          content: const LocationBottomSheet(
+                            address: '福岡市博多区冷泉町2-34',
+                            postalCode: '812-0039',
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    _buildSmallIconButton(
+                      icon: Icons.cleaning_services,
+                      onPressed: () {
+                        CustomBottomSheet.show(
+                          context: context,
+                          title: 'サービス内容詳細',
+                          content: const ServiceDetailBottomSheet(),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    _buildSmallIconButton(
+                      icon: Icons.support_agent,
+                      onPressed: () {
+                        CustomBottomSheet.show(
+                          context: context,
+                          title: '担当コーディネーター',
+                          content: const CoordinatorBottomSheet(),
+                          contentPadding: EdgeInsets.all(0),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '担当C：${booking.coordinatorName}',
+                  style: AppTextStyles.bodySmall.copyWith(color: textSecondary),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
