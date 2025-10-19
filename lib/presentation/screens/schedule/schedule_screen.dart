@@ -13,8 +13,8 @@ import 'widgets/schedule_cancel_confirm.dart'; // Added import for ScheduleCance
 import 'widgets/schedule_edit_confirm.dart'; // Added import for ScheduleEditConfirm
 import 'widgets/schedule_pending_detail.dart'; // Added import for SchedulePendingDetail
 import 'data/sample_events.dart'; // 追加
-import '../../../widgets/app/request_completion_widget.dart';
-import '../../../components/buttons/button_row.dart';
+import '../../widgets/app/request_completion_widget.dart';
+import '../../components/buttons/button_row.dart';
 
 enum ScheduleMode {
   view,
@@ -27,16 +27,16 @@ enum ScheduleMode {
   requestSent,
 }
 
-class ScheduleBottomSheet extends StatefulWidget {
+class ScheduleScreen extends StatefulWidget {
   final bool showDetailDirectly; // 詳細画面を直接表示するかどうか
 
-  const ScheduleBottomSheet({super.key, this.showDetailDirectly = false});
+  const ScheduleScreen({super.key, this.showDetailDirectly = false});
 
   @override
-  State<ScheduleBottomSheet> createState() => _ScheduleBottomSheetState();
+  State<ScheduleScreen> createState() => _ScheduleScreenState();
 }
 
-class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
+class _ScheduleScreenState extends State<ScheduleScreen> {
   // 既存の状態
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
@@ -305,16 +305,88 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.8,
-        minHeight: 400,
+    return Scaffold(
+      backgroundColor: backgroundSurface,
+      appBar: _buildAppBar(context),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: _buildContent(),
+        ),
       ),
-      child: Column(
-        children: [
-          // モードに応じた表示切り替え
-          Expanded(child: _buildContent()),
-        ],
+      // フローティングアクションボタンを追加（viewモードの時のみ表示）
+      floatingActionButton: _currentMode == ScheduleMode.view
+          ? FloatingActionButton(
+              onPressed: _onAddButtonPressed,
+              backgroundColor: backgroundAccent,
+              elevation: 4,
+              child: Icon(Icons.add, color: textOnPrimary, size: 28),
+            )
+          : null,
+    );
+  }
+
+  // AppBarの構築（モードに応じて変更）
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    String title;
+    VoidCallback? onBackPressed;
+
+    switch (_currentMode) {
+      case ScheduleMode.view:
+        title = '変更・キャンセル連絡';
+        onBackPressed = () => Navigator.of(context).pop();
+        break;
+      case ScheduleMode.add:
+        title = '予定を追加';
+        onBackPressed = _onCancelAdd;
+        break;
+      case ScheduleMode.detail:
+        title = '予定詳細';
+        onBackPressed = _onBackToView;
+        break;
+      case ScheduleMode.edit:
+        title = '予定を編集';
+        onBackPressed = _onBackToDetail;
+        break;
+      case ScheduleMode.editConfirm:
+        title = '変更内容の確認';
+        onBackPressed = _onBackToEdit;
+        break;
+      case ScheduleMode.cancelConfirm:
+        title = 'キャンセルの確認';
+        onBackPressed = _onBackToDetail;
+        break;
+      case ScheduleMode.pendingDetail:
+        title = '申請中の予定';
+        onBackPressed = _onBackToView;
+        break;
+      case ScheduleMode.requestSent:
+        title = '申請完了';
+        onBackPressed = null; // 完了画面では戻るボタンを非表示
+        break;
+    }
+
+    return AppBar(
+      backgroundColor: backgroundSurface,
+      elevation: 0,
+      leading: onBackPressed != null
+          ? IconButton(
+              icon: Icon(Icons.arrow_back, color: textPrimary),
+              onPressed: onBackPressed,
+            )
+          : null,
+      title: Text(
+        title,
+        style: AppTextStyles.h6.copyWith(
+          color: textPrimary,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      centerTitle: true,
+      // AppBarの下に薄い線を追加
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(color: borderMuted),
       ),
     );
   }
@@ -371,34 +443,10 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (_selectedDay != null) ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${_selectedDay!.year}年${_selectedDay!.month}月${_selectedDay!.day}日の予定',
-                      style: AppTextStyles.h6,
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: backgroundAccent,
-                        borderRadius: BorderRadius.circular(8),
-                        // shadow
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        onPressed: _onAddButtonPressed,
-                        color: textPrimary,
-                        icon: Icon(Icons.add, color: Colors.white),
-                        tooltip: '予定を追加',
-                      ),
-                    ),
-                  ],
+                // +ボタンを削除して、タイトルのみ表示
+                Text(
+                  '${_selectedDay!.year}年${_selectedDay!.month}月${_selectedDay!.day}日の予定',
+                  style: AppTextStyles.h6,
                 ),
                 const SizedBox(height: 12),
                 Expanded(
@@ -408,25 +456,8 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
                   ),
                 ),
               ] else ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('今後の予定', style: AppTextStyles.h6),
-                    FilledButton(
-                      onPressed: _onAddButtonPressed,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: backgroundAccent,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(9999),
-                        ),
-                        padding: EdgeInsets.zero,
-                        minimumSize: const Size(64, 42),
-                      ),
-                      child: Icon(Icons.add, color: textOnPrimary, size: 24),
-                    ),
-                  ],
-                ),
+                // +ボタンを削除して、タイトルのみ表示
+                Text('今後の予定', style: AppTextStyles.h6),
                 const SizedBox(height: 12),
                 Expanded(
                   child: ScheduleUpcomingList(

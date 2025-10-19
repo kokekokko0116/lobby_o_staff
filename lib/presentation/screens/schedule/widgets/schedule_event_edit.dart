@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:lobby_o_staff/core/constants/app_colors.dart';
 import 'package:lobby_o_staff/core/constants/app_text_styles.dart';
-import '../../../../components/buttons/button_row.dart';
+import '../../../components/buttons/button_row.dart';
+import '../models/schedule_event.dart';
 
-class ScheduleAddForm extends StatefulWidget {
-  final DateTime? selectedDate;
+class ScheduleEventEdit extends StatefulWidget {
+  final Event event;
   final Function(
     String title,
     TimeOfDay startTime,
@@ -15,32 +16,47 @@ class ScheduleAddForm extends StatefulWidget {
   onSubmit;
   final VoidCallback onCancel;
 
-  const ScheduleAddForm({
+  const ScheduleEventEdit({
     super.key,
-    required this.selectedDate,
+    required this.event,
     required this.onSubmit,
     required this.onCancel,
   });
 
   @override
-  State<ScheduleAddForm> createState() => _ScheduleAddFormState();
+  State<ScheduleEventEdit> createState() => _ScheduleEventEditState();
 }
 
-class _ScheduleAddFormState extends State<ScheduleAddForm> {
-  DateTime? _selectedDate;
-  DateTime _focusedDay = DateTime.now();
-
-  // 時間選択用の値（9時から開始、1時間の予定）
-  int _startHour = 9;
-  int _startMinute = 0;
-  int _endHour = 10;
-  int _endMinute = 0;
+class _ScheduleEventEditState extends State<ScheduleEventEdit> {
+  late DateTime _selectedDate;
+  late DateTime _focusedDay;
+  late int _startHour;
+  late int _startMinute;
+  late int _endHour;
+  late int _endMinute;
 
   @override
   void initState() {
     super.initState();
-    _selectedDate = widget.selectedDate ?? DateTime.now();
-    _focusedDay = _selectedDate ?? DateTime.now();
+    _selectedDate = widget.event.date;
+    _focusedDay = widget.event.date;
+
+    // 時間を解析（例: "10:00~12:00"）
+    final timeParts = widget.event.time.split('~');
+    if (timeParts.length == 2) {
+      final startParts = timeParts[0].split(':');
+      final endParts = timeParts[1].split(':');
+
+      _startHour = int.tryParse(startParts[0]) ?? 9;
+      _startMinute = int.tryParse(startParts[1]) ?? 0;
+      _endHour = int.tryParse(endParts[0]) ?? 10;
+      _endMinute = int.tryParse(endParts[1]) ?? 0;
+    } else {
+      _startHour = 9;
+      _startMinute = 0;
+      _endHour = 10;
+      _endMinute = 0;
+    }
   }
 
   TimeOfDay get _startTime => TimeOfDay(hour: _startHour, minute: _startMinute);
@@ -281,14 +297,14 @@ class _ScheduleAddFormState extends State<ScheduleAddForm> {
                 reserveSecondarySpace: false,
                 secondaryText: 'キャンセル',
                 onSecondaryPressed: widget.onCancel,
-                primaryText: '追加する',
+                primaryText: '次へ',
                 onPrimaryPressed: _canSubmit
                     ? () {
                         widget.onSubmit(
-                          '', // タイトルは空文字
+                          widget.event.title, // 既存のタイトルを保持
                           _startTime,
                           _endTime,
-                          _selectedDate!,
+                          _selectedDate,
                         );
                       }
                     : null,

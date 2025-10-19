@@ -9,9 +9,10 @@ import '../bottom_sheets/location.dart';
 import '../bottom_sheets/work_history.dart';
 import '../bottom_sheets/employment_contract.dart';
 import '../bottom_sheets/coordinator.dart';
-import '../bottom_sheets/schedule/schedule_bottom_sheet.dart';
+import '../schedule/schedule_screen.dart';
 import '../bottom_sheets/service_detail.dart';
 import '../bottom_sheets/review.dart';
+import '../bottom_sheets/customer_list.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 
@@ -232,11 +233,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.calendar_today,
                 label: 'Schedule',
                 onPressed: () {
-                  CustomBottomSheet.show(
-                    context: context,
-                    title: '変更・キャンセル連絡',
-                    content: const ScheduleBottomSheet(
-                      showDetailDirectly: false,
+                  // ボトムシートではなく画面遷移に変更
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const ScheduleScreen(showDetailDirectly: false),
                     ),
                   );
                 },
@@ -259,9 +261,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 label: 'Customer',
                 onPressed: () {
                   // Customer 担当顧客の処理
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('担当顧客画面（未実装）')));
+                  CustomBottomSheet.show(
+                    context: context,
+                    title: '担当顧客',
+                    content: const CustomerList(),
+                  );
                 },
               ),
             ],

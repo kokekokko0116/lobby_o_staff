@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lobby_o_staff/core/constants/app_colors.dart';
 import 'package:lobby_o_staff/core/constants/app_text_styles.dart';
-import '../../../../components/buttons/button_row.dart';
-import '../../../../components/buttons/secondary_button.dart';
-import '../../../../widgets/app/staff_info_widget.dart';
+import '../../../components/buttons/button_row.dart';
+import '../../../components/buttons/secondary_button.dart';
+import '../../../widgets/app/staff_info_widget.dart';
 import '../models/schedule_event.dart';
 
 class SchedulePendingDetail extends StatelessWidget {

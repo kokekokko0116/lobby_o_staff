@@ -5,6 +5,7 @@ import '../../presentation/screens/auth/register_screen.dart';
 import '../../presentation/screens/test/theme_showcase_screen.dart';
 import '../../presentation/screens/app/call_screen.dart';
 import '../../presentation/screens/app/home_screen.dart';
+import '../../presentation/screens/schedule/schedule_screen.dart';
 // import '../../presentation/screens/service/service_application_screen.dart';
 
 /// アプリのルート設定
@@ -22,6 +23,8 @@ class AppRoutes {
     RouteNames.themeShowcase: (context) => const ThemeShowcaseScreen(),
     RouteNames.home: (context) => const HomeScreen(),
     RouteNames.call: (context) => const CallScreen(),
+    RouteNames.schedule: (context) => const ScheduleScreen(),
+    
     // RouteNames.serviceApplication: (context) => const ServiceApplicationScreen(),
   };
 
@@ -38,6 +41,8 @@ class AppRoutes {
         return _createRoute(const CallScreen());
       case RouteNames.themeShowcase:
         return _createRoute(const ThemeShowcaseScreen());
+      case RouteNames.schedule:
+        return _createRoute(const ScheduleScreen());
       default:
         return _createRoute(
           Scaffold(body: Center(child: Text('ページが見つかりません: ${settings.name}'))),

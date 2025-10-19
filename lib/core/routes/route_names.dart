@@ -18,6 +18,9 @@ class RouteNames {
   // 設定
   static const String settings = '/settings';
 
+  // スケジュール
+  static const String schedule = '/schedule';
+
   // 通話
   static const String call = '/call';
 
