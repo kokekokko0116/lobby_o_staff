@@ -109,7 +109,9 @@ class _DateSelectionWidgetState extends State<DateSelectionWidget> {
                               width: 2,
                             ),
                             borderRadius: BorderRadius.circular(8),
-                            color: backgroundDefault,
+                            color: schedule.isCompleted
+                                ? const Color(0xFFE8F5E9) // 薄緑（完了）
+                                : const Color(0xFFFFEBEE), // 薄い赤（未完了）
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,11 +154,11 @@ class _DateSelectionWidgetState extends State<DateSelectionWidget> {
                               Icon(
                                 schedule.isCompleted
                                     ? Icons
-                                          .check_circle // チェックマーク（完了）
-                                    : Icons.radio_button_unchecked, // 空の円（未完了）
+                                          .check_circle // チェックマーク（報告済み）
+                                    : Icons.error, // ！マーク（未報告）
                                 color: schedule.isCompleted
                                     ? const Color(0xFF4CAF50) // 緑
-                                    : const Color(0xFF9E9E9E), // グレー
+                                    : const Color(0xFFD64545), // 赤
                                 size: 24,
                               ),
                             ],

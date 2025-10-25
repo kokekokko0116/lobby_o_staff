@@ -94,7 +94,9 @@ class _CustomerListState extends State<CustomerList> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: backgroundDefault,
+        color: customer.status == '休止中'
+            ? backgroundSecondary
+            : backgroundDefault,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
